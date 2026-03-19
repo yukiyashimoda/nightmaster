@@ -165,6 +165,8 @@ export function NewCustomerForm({ casts, customers }: NewCustomerFormProps) {
         name: data.get('name') as string,
         ruby: data.get('ruby') as string,
         nickname: data.get('nickname') as string,
+        phone: data.get('phone') as string,
+        email: data.get('email') as string,
         designatedCastIds,
         isAlert,
         alertReason: isAlert ? alertReason : '',
@@ -215,6 +217,16 @@ export function NewCustomerForm({ casts, customers }: NewCustomerFormProps) {
       <div className="space-y-1.5">
         <Label className="text-brand-plum">ニックネーム</Label>
         <Input name="nickname" placeholder="たなちゃん" />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-brand-plum">電話番号</Label>
+        <Input name="phone" type="tel" placeholder="090-0000-0000" />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-brand-plum">メールアドレス</Label>
+        <Input name="email" type="email" placeholder="example@email.com" />
       </div>
 
       <div className="space-y-1.5">

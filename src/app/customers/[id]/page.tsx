@@ -22,6 +22,8 @@ import {
   Edit,
   Calendar,
   Plus,
+  Phone,
+  Mail,
 } from 'lucide-react'
 import { GiBrandyBottle } from 'react-icons/gi'
 import { FaAddressCard } from 'react-icons/fa'
@@ -166,6 +168,32 @@ export default async function CustomerDetailPage({
                     </span>
                   ))}
                 </div>
+              </div>
+            </>
+          )}
+
+          {(customer.phone || customer.email) && (
+            <>
+              <Separator className="my-4" />
+              <div className="flex flex-col gap-2">
+                {customer.phone && (
+                  <a
+                    href={`tel:${customer.phone}`}
+                    className="flex items-center gap-2 text-sm text-brand-plum hover:text-brand-plum/70 transition-colors"
+                  >
+                    <Phone className="h-4 w-4 text-brand-plum/50 shrink-0" />
+                    {customer.phone}
+                  </a>
+                )}
+                {customer.email && (
+                  <a
+                    href={`mailto:${customer.email}`}
+                    className="flex items-center gap-2 text-sm text-brand-plum hover:text-brand-plum/70 transition-colors"
+                  >
+                    <Mail className="h-4 w-4 text-brand-plum/50 shrink-0" />
+                    {customer.email}
+                  </a>
+                )}
               </div>
             </>
           )}

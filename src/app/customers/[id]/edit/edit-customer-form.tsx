@@ -132,6 +132,8 @@ export function EditCustomerForm({
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [phone, setPhone] = useState(customer.phone ?? '')
+  const [email, setEmail] = useState(customer.email ?? '')
   const [isAlert, setIsAlert] = useState(customer.isAlert)
   const [alertReason, setAlertReason] = useState(customer.alertReason ?? '')
   const [hasGlass, setHasGlass] = useState(customer.hasGlass ?? false)
@@ -202,6 +204,8 @@ export function EditCustomerForm({
         name: data.get('name') as string,
         ruby: data.get('ruby') as string,
         nickname: data.get('nickname') as string,
+        phone,
+        email,
         designatedCastIds,
         isAlert,
         alertReason: isAlert ? alertReason : '',
@@ -253,6 +257,16 @@ export function EditCustomerForm({
       <div className="space-y-1.5">
         <Label className="text-brand-plum">ニックネーム</Label>
         <Input name="nickname" defaultValue={customer.nickname} />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-brand-plum">電話番号</Label>
+        <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="090-0000-0000" />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-brand-plum">メールアドレス</Label>
+        <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@email.com" />
       </div>
 
       <CastMultiSelect

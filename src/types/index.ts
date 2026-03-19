@@ -12,6 +12,8 @@ export interface Customer {
   hasGlass: boolean
   glassMemo: string
   receiptNames: string[]
+  phone: string
+  email: string
   lastVisitDate: string | null
   updatedAt: string
   updatedBy: string
