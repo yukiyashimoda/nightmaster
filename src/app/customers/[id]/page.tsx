@@ -136,19 +136,22 @@ export default async function CustomerDetailPage({
           {/* 本指名キャスト + ボトル本数 */}
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="text-brand-plum/50 text-xs mb-0.5">本指名キャスト</p>
-              <p className="text-brand-plum font-medium">
-                {designatedCasts.length > 0
-                  ? designatedCasts.map((c, i) => (
-                      <span key={c!.id}>
-                        {i > 0 && '・'}
-                        <Link href={`/casts/${c!.id}`} className="hover:underline">
-                          {c!.name}
-                        </Link>
-                      </span>
-                    ))
-                  : '未設定'}
-              </p>
+              <p className="text-brand-plum/50 text-xs mb-1.5">本指名キャスト</p>
+              {designatedCasts.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {designatedCasts.map((c) => (
+                    <Link
+                      key={c!.id}
+                      href={`/casts/${c!.id}`}
+                      className="px-3 py-1.5 rounded-lg bg-white border border-brand-beige text-sm text-brand-plum hover:border-brand-plum/40 transition-colors shadow-sm"
+                    >
+                      {c!.name}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-brand-plum font-medium">未設定</p>
+              )}
             </div>
             <div>
               <p className="text-brand-plum/50 text-xs mb-0.5">ボトル本数</p>
@@ -158,6 +161,27 @@ export default async function CustomerDetailPage({
               </p>
             </div>
           </div>
+
+          {/* 場内指名履歴 */}
+          {inStoreCasts.length > 0 && (
+            <>
+              <Separator className="my-4" />
+              <div>
+                <p className="text-brand-plum/50 text-xs mb-1.5">場内指名履歴</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {inStoreCasts.map((c) => (
+                    <Link
+                      key={c!.id}
+                      href={`/casts/${c!.id}`}
+                      className="px-3 py-1.5 rounded-lg bg-white border border-brand-beige text-sm text-brand-plum hover:border-brand-plum/40 transition-colors shadow-sm"
+                    >
+                      {c!.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
 
           {customer.memo && (
             <>
@@ -259,26 +283,6 @@ export default async function CustomerDetailPage({
             </p>
           </div>
         </div>
-
-        {/* 場内指名キャスト一覧 */}
-        {inStoreCasts.length > 0 && (
-          <div>
-            <h3 className="text-sm font-semibold text-brand-plum/60 uppercase tracking-wider mb-3">
-              場内指名キャスト
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {inStoreCasts.map((c) => (
-                <Link
-                  key={c!.id}
-                  href={`/casts/${c!.id}`}
-                  className="px-3 py-1.5 rounded-lg bg-white border border-brand-beige text-sm text-brand-plum hover:border-brand-plum/40 transition-colors shadow-sm"
-                >
-                  {c!.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Linked Customers */}
         {linkedCustomers.length > 0 && (
