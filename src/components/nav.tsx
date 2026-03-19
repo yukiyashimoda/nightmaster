@@ -35,8 +35,7 @@ export function Nav({ isLoggedIn }: NavProps) {
         <div className="max-w-2xl mx-auto px-4 h-full flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="flex flex-col leading-none gap-0.5">
-              <span className="text-[9px] font-medium text-brand-plum/50 tracking-widest uppercase">Neo Snack L</span>
-              <span className="text-brand-plum text-base" style={{ fontFamily: 'var(--font-audiowide)' }}>Bottle Master Ver１</span>
+<span className="text-brand-plum text-base" style={{ fontFamily: 'var(--font-audiowide)' }}>Bottle Master Ver１</span>
             </div>
           </Link>
           <div className="flex items-center gap-1">
