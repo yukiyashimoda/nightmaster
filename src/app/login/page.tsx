@@ -37,7 +37,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex items-center justify-center gap-2.5 mb-8">
           <div className="flex flex-col leading-none gap-0.5">
-<span className="text-brand-plum text-base" style={{ fontFamily: 'var(--font-audiowide)' }}>Night Master v1</span>
+<span className="text-brand-plum text-base" style={{ fontFamily: 'var(--font-audiowide)' }}><span style={{ color: '#F1896C' }}>N</span>ight Master v1</span>
           </div>
         </div>
 
