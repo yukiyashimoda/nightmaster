@@ -43,6 +43,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -61,6 +63,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -79,6 +83,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -97,6 +103,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -115,6 +123,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -133,6 +143,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -151,6 +163,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -169,6 +183,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -187,6 +203,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -205,6 +223,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -223,6 +243,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -241,6 +263,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -259,6 +283,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -277,6 +303,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -295,6 +323,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -313,6 +343,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -331,6 +363,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -349,6 +383,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -367,6 +403,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -385,6 +423,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -403,6 +443,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -421,6 +463,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -439,6 +483,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -457,6 +503,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -475,6 +523,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
   {
@@ -493,6 +543,8 @@ export const mockCustomers: Customer[] = [
     hasGlass: false,
     glassMemo: '',
     receiptNames: [],
+    phone: '',
+    email: '',
     updatedBy: '',
   },
 ]
