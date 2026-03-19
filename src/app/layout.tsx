@@ -8,11 +8,11 @@ const kiwiMaru = Kiwi_Maru({ subsets: ['latin'], weight: ['300', '400', '500'], 
 const audiowide = Audiowide({ subsets: ['latin'], weight: '400', variable: '--font-audiowide' })
 
 export const metadata: Metadata = {
-  title: 'ネオスナックエル ボトル管理アプリ',
-  description: 'ネオスナックエル ボトル管理アプリ',
+  title: 'ナイトワーク顧客管理アプリ',
+  description: 'ナイトワーク顧客管理アプリ',
   openGraph: {
-    title: 'ネオスナックエル ボトル管理アプリ',
-    description: 'ネオスナックエル ボトル管理アプリ',
+    title: 'ナイトワーク顧客管理アプリ',
+    description: 'ナイトワーク顧客管理アプリ',
     type: 'website',
     locale: 'ja_JP',
   },
