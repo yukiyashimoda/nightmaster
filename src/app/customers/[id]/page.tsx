@@ -150,7 +150,7 @@ export default async function CustomerDetailPage({
                   ))}
                 </div>
               ) : (
-                <p className="text-brand-plum font-medium">未設定</p>
+                <p className="text-brand-plum font-medium">フリー</p>
               )}
             </div>
             <div>
