@@ -56,6 +56,12 @@ export default async function CustomerDetailPage({
     .map((cid) => customerMap.get(cid))
     .filter(Boolean)
 
+  // 来店履歴から場内指名キャストをユニークに集計
+  const inStoreCastIdSet = new Set(visits.flatMap((v) => v.inStoreCastIds))
+  const inStoreCasts = Array.from(inStoreCastIdSet)
+    .map((cid) => castMap.get(cid))
+    .filter(Boolean)
+
   const designatedCastRuby = designatedCasts[0]?.ruby
   const avatarLabel = designatedCastRuby ?? 'FREE'
 
@@ -133,7 +139,14 @@ export default async function CustomerDetailPage({
               <p className="text-brand-plum/50 text-xs mb-0.5">本指名キャスト</p>
               <p className="text-brand-plum font-medium">
                 {designatedCasts.length > 0
-                  ? designatedCasts.map((c) => c!.name).join('・')
+                  ? designatedCasts.map((c, i) => (
+                      <span key={c!.id}>
+                        {i > 0 && '・'}
+                        <Link href={`/casts/${c!.id}`} className="hover:underline">
+                          {c!.name}
+                        </Link>
+                      </span>
+                    ))
                   : '未設定'}
               </p>
             </div>
@@ -246,6 +259,26 @@ export default async function CustomerDetailPage({
             </p>
           </div>
         </div>
+
+        {/* 場内指名キャスト一覧 */}
+        {inStoreCasts.length > 0 && (
+          <div>
+            <h3 className="text-sm font-semibold text-brand-plum/60 uppercase tracking-wider mb-3">
+              場内指名キャスト
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {inStoreCasts.map((c) => (
+                <Link
+                  key={c!.id}
+                  href={`/casts/${c!.id}`}
+                  className="px-3 py-1.5 rounded-lg bg-white border border-brand-beige text-sm text-brand-plum hover:border-brand-plum/40 transition-colors shadow-sm"
+                >
+                  {c!.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Linked Customers */}
         {linkedCustomers.length > 0 && (
