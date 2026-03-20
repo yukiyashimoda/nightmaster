@@ -2,13 +2,17 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Plus, Clock } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import type { Cast, Customer, Reservation } from '@/types'
+import { ReservationCard } from '@/components/reservation-card'
 
 interface CalendarViewProps {
   reservations: Reservation[]
+  customers: Customer[]
   customerMap: Map<string, Customer>
+  casts: Cast[]
   castMap: Map<string, Cast>
+  loggedIn: boolean
 }
 
 const DAY_LABELS = ['日', '月', '火', '水', '木', '金', '土']
@@ -30,73 +34,12 @@ function getWeekStart(d: Date): Date {
   return result
 }
 
-function ReservationCard({
-  reservation,
-  customerMap,
-  castMap,
-}: {
-  reservation: Reservation
-  customerMap: Map<string, Customer>
-  castMap: Map<string, Cast>
-}) {
-  const customer = reservation.customerId ? customerMap.get(reservation.customerId) : null
-  const designatedCastNames = reservation.designatedCastIds
-    .map((id) => castMap.get(id)?.name).filter(Boolean).join('・')
-  const accompaniedCastNames = reservation.accompaniedCastIds
-    .map((id) => castMap.get(id)?.name).filter(Boolean).join('・')
-  return (
-    <div className="bg-white rounded-lg border border-brand-beige p-3 space-y-1.5">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Clock className="h-3.5 w-3.5 text-brand-plum/50 shrink-0" />
-          <span className="text-sm font-semibold text-brand-plum">{reservation.time}</span>
-          <span className="text-sm text-brand-plum">{reservation.partySize}名</span>
-        </div>
-        <div className="flex gap-1">
-          {reservation.hasDesignation && (
-            <span className="text-[10px] bg-brand-plum/10 text-brand-plum px-1.5 py-0.5 rounded-full font-medium">
-              指名{designatedCastNames ? `：${designatedCastNames}` : ''}
-            </span>
-          )}
-          {reservation.isAccompanied && (
-            <span className="text-[10px] bg-brand-gold/10 text-brand-gold px-1.5 py-0.5 rounded-full font-medium">
-              同伴{accompaniedCastNames ? `：${accompaniedCastNames}` : ''}
-            </span>
-          )}
-          {reservation.priceType === 'party' && (
-            <span className="text-[10px] bg-brand-coral/10 text-brand-coral px-1.5 py-0.5 rounded-full font-medium">パーティー</span>
-          )}
-        </div>
-      </div>
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-          reservation.customerType === 'existing'
-            ? 'bg-brand-beige text-brand-plum/70'
-            : 'bg-gray-100 text-gray-500'
-        }`}>
-          {reservation.customerType === 'existing' ? '既存' : '初来店'}
-        </span>
-        {customer && (
-          <Link href={`/customers/${customer.id}`} className="text-xs text-brand-plum font-medium hover:underline">
-            {customer.name}
-          </Link>
-        )}
-        {reservation.customerType === 'new' && reservation.guestName && (
-          <span className="text-xs text-brand-plum/70">{reservation.guestName}</span>
-        )}
-      </div>
-      {reservation.memo && (
-        <p className="text-[11px] text-brand-plum/50 border-t border-brand-beige pt-1.5 line-clamp-1">{reservation.memo}</p>
-      )}
-    </div>
-  )
-}
 
 // ─── 無限スクロール定数 ───────────────────────────────────────
 const BUFFER_WEEKS = 26           // 前後26週 = 約1年
 const TOTAL_WEEKS = BUFFER_WEEKS * 2 + 1  // 53週
 
-export function CalendarView({ reservations, customerMap, castMap }: CalendarViewProps) {
+export function CalendarView({ reservations, customers, customerMap, casts, castMap, loggedIn }: CalendarViewProps) {
   const today = useMemo(() => {
     const d = new Date()
     d.setHours(0, 0, 0, 0)
@@ -394,7 +337,7 @@ export function CalendarView({ reservations, customerMap, castMap }: CalendarVie
               <p className="text-sm text-brand-plum/30 py-2">予約なし</p>
             ) : (
               selectedReservations.map((r) => (
-                <ReservationCard key={r.id} reservation={r} customerMap={customerMap} castMap={castMap} />
+                <ReservationCard key={r.id} reservation={r} customerMap={customerMap} customers={customers} castMap={castMap} casts={casts} loggedIn={loggedIn} />
               ))
             )}
           </div>
@@ -478,7 +421,7 @@ export function CalendarView({ reservations, customerMap, castMap }: CalendarVie
               <p className="text-sm text-brand-plum/30 py-2">予約なし</p>
             ) : (
               selectedReservations.map((r) => (
-                <ReservationCard key={r.id} reservation={r} customerMap={customerMap} castMap={castMap} />
+                <ReservationCard key={r.id} reservation={r} customerMap={customerMap} customers={customers} castMap={castMap} casts={casts} loggedIn={loggedIn} />
               ))
             )}
           </div>
