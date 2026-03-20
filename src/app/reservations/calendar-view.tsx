@@ -335,18 +335,16 @@ export function CalendarView({ reservations, customers, customerMap, casts, cast
             <h2 className="text-sm font-semibold text-brand-plum/60">
               {selectedDate.replace(/-/g, '/')}
             </h2>
-            {selectedReservations.length > 0 && (
-              <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-xl border border-brand-beige bg-white px-4 py-3 shadow-sm">
-                  <p className="text-xs text-brand-plum/50 mb-0.5">予約件数</p>
-                  <p className="text-xl font-bold text-brand-plum">{selectedReservations.length} <span className="text-sm font-normal">件</span></p>
-                </div>
-                <div className="rounded-xl border border-brand-beige bg-white px-4 py-3 shadow-sm">
-                  <p className="text-xs text-brand-plum/50 mb-0.5">同伴</p>
-                  <p className="text-xl font-bold text-brand-gold">{selectedAccompaniedCount} <span className="text-sm font-normal">件</span></p>
-                </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-xl border border-brand-beige bg-white px-4 py-3 shadow-sm">
+                <p className="text-xs text-brand-plum/50 mb-0.5">予約件数</p>
+                <p className="text-xl font-bold text-brand-plum">{selectedReservations.length} <span className="text-sm font-normal">件</span></p>
               </div>
-            )}
+              <div className="rounded-xl border border-brand-beige bg-white px-4 py-3 shadow-sm">
+                <p className="text-xs text-brand-plum/50 mb-0.5">同伴</p>
+                <p className="text-xl font-bold text-brand-gold">{selectedAccompaniedCount} <span className="text-sm font-normal">件</span></p>
+              </div>
+            </div>
             {selectedReservations.length === 0 ? (
               <p className="text-sm text-brand-plum/30 py-2">予約なし</p>
             ) : (
@@ -431,18 +429,16 @@ export function CalendarView({ reservations, customers, customerMap, casts, cast
             <h2 className="text-sm font-semibold text-brand-plum/60">
               {selectedDate.replace(/-/g, '/')}
             </h2>
-            {selectedReservations.length > 0 && (
-              <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-xl border border-brand-beige bg-white px-4 py-3 shadow-sm">
-                  <p className="text-xs text-brand-plum/50 mb-0.5">予約件数</p>
-                  <p className="text-xl font-bold text-brand-plum">{selectedReservations.length} <span className="text-sm font-normal">件</span></p>
-                </div>
-                <div className="rounded-xl border border-brand-beige bg-white px-4 py-3 shadow-sm">
-                  <p className="text-xs text-brand-plum/50 mb-0.5">同伴</p>
-                  <p className="text-xl font-bold text-brand-gold">{selectedAccompaniedCount} <span className="text-sm font-normal">件</span></p>
-                </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-xl border border-brand-beige bg-white px-4 py-3 shadow-sm">
+                <p className="text-xs text-brand-plum/50 mb-0.5">予約件数</p>
+                <p className="text-xl font-bold text-brand-plum">{selectedReservations.length} <span className="text-sm font-normal">件</span></p>
               </div>
-            )}
+              <div className="rounded-xl border border-brand-beige bg-white px-4 py-3 shadow-sm">
+                <p className="text-xs text-brand-plum/50 mb-0.5">同伴</p>
+                <p className="text-xl font-bold text-brand-gold">{selectedAccompaniedCount} <span className="text-sm font-normal">件</span></p>
+              </div>
+            </div>
             {selectedReservations.length === 0 ? (
               <p className="text-sm text-brand-plum/30 py-2">予約なし</p>
             ) : (
