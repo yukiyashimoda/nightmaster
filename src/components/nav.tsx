@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LogIn, LogOut, Menu, X, User, TrendingUp } from 'lucide-react'
+import { LogIn, LogOut, Menu, X, User, TrendingUp, CalendarDays } from 'lucide-react'
 import { FaAddressCard, FaStar } from 'react-icons/fa'
 import { GiAmpleDress } from 'react-icons/gi'
 import { cn } from '@/lib/utils'
@@ -24,6 +24,7 @@ export function Nav({ isLoggedIn, sessionUser }: NavProps) {
     { href: '/customers', label: '顧客', Icon: FaAddressCard },
     { href: '/casts', label: 'キャスト', Icon: GiAmpleDress },
     { href: '/favorites', label: 'お気に入り', Icon: FaStar },
+    { href: '/reservations', label: '予約', Icon: CalendarDays },
   ]
 
   const handleLogout = async () => {

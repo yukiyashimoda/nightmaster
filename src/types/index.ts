@@ -36,6 +36,23 @@ export interface Cast {
   updatedBy: string
 }
 
+export interface Reservation {
+  id: string
+  date: string           // YYYY-MM-DD
+  time: string           // HH:MM
+  partySize: number      // 人数
+  hasDesignation: boolean  // 指名の有無
+  isAccompanied: boolean   // 同伴出勤か通常か
+  customerType: 'existing' | 'new'  // 顧客か初来店か
+  customerId: string | null         // 既存顧客の場合
+  priceType: 'normal' | 'party'     // 通常料金かパーティープランか
+  partyPlanPrice: number | null     // パーティープラン金額
+  partyPlanMinutes: number | null   // パーティープランセット時間（分）
+  memo: string
+  updatedAt: string
+  updatedBy: string
+}
+
 export interface VisitRecord {
   id: string
   customerId: string

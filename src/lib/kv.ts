@@ -1,5 +1,5 @@
 import { neon } from '@neondatabase/serverless'
-import type { Customer, Bottle, Cast, VisitRecord } from '@/types'
+import type { Customer, Bottle, Cast, VisitRecord, Reservation } from '@/types'
 import {
   mockCustomers,
   mockBottles,
@@ -21,6 +21,7 @@ const store = {
   visitRecords: new Map<string, VisitRecord>(
     mockVisitRecords.map((v) => [v.id, v])
   ),
+  reservations: new Map<string, Reservation>(),
 }
 
 function generateId(): string {
@@ -413,5 +414,94 @@ export async function deleteVisitRecord(id: string): Promise<boolean> {
   if (!useDB) return store.visitRecords.delete(id)
   const sql = getSQL()
   await sql`DELETE FROM visit_records WHERE id = ${id}`
+  return true
+}
+
+// ─── Reservation CRUD ─────────────────────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toReservation(r: any): Reservation {
+  return {
+    id: r.id,
+    date: r.date,
+    time: r.time,
+    partySize: r.party_size,
+    hasDesignation: r.has_designation,
+    isAccompanied: r.is_accompanied,
+    customerType: r.customer_type,
+    customerId: r.customer_id ?? null,
+    priceType: r.price_type,
+    partyPlanPrice: r.party_plan_price ?? null,
+    partyPlanMinutes: r.party_plan_minutes ?? null,
+    memo: r.memo ?? '',
+    updatedAt: r.updated_at,
+    updatedBy: r.updated_by,
+  }
+}
+
+export async function getReservations(): Promise<Reservation[]> {
+  if (!useDB) {
+    return Array.from(store.reservations.values()).sort((a, b) =>
+      `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)
+    )
+  }
+  const sql = getSQL()
+  const rows = await sql`SELECT * FROM reservations ORDER BY date, time`
+  return rows.map(toReservation)
+}
+
+export async function getReservation(id: string): Promise<Reservation | null> {
+  if (!useDB) return store.reservations.get(id) ?? null
+  const sql = getSQL()
+  const rows = await sql`SELECT * FROM reservations WHERE id = ${id}`
+  return rows[0] ? toReservation(rows[0]) : null
+}
+
+export async function createReservation(data: Omit<Reservation, 'id' | 'updatedAt'>): Promise<Reservation> {
+  const id = generateId()
+  const updatedAt = new Date().toISOString()
+  if (!useDB) {
+    const reservation: Reservation = { ...data, id, updatedAt }
+    store.reservations.set(id, reservation)
+    return reservation
+  }
+  const sql = getSQL()
+  const rows = await sql`
+    INSERT INTO reservations (id, date, time, party_size, has_designation, is_accompanied, customer_type, customer_id, price_type, party_plan_price, party_plan_minutes, memo, updated_at, updated_by)
+    VALUES (${id}, ${data.date}, ${data.time}, ${data.partySize}, ${data.hasDesignation}, ${data.isAccompanied}, ${data.customerType}, ${data.customerId}, ${data.priceType}, ${data.partyPlanPrice}, ${data.partyPlanMinutes}, ${data.memo}, ${updatedAt}, ${data.updatedBy})
+    RETURNING *
+  `
+  return toReservation(rows[0])
+}
+
+export async function updateReservation(id: string, data: Partial<Omit<Reservation, 'id'>>): Promise<Reservation | null> {
+  if (!useDB) {
+    const existing = store.reservations.get(id)
+    if (!existing) return null
+    const updated: Reservation = { ...existing, ...data, id, updatedAt: new Date().toISOString() }
+    store.reservations.set(id, updated)
+    return updated
+  }
+  const existing = await getReservation(id)
+  if (!existing) return null
+  const m = { ...existing, ...data, updatedAt: new Date().toISOString() }
+  const sql = getSQL()
+  const rows = await sql`
+    UPDATE reservations SET
+      date = ${m.date}, time = ${m.time}, party_size = ${m.partySize},
+      has_designation = ${m.hasDesignation}, is_accompanied = ${m.isAccompanied},
+      customer_type = ${m.customerType}, customer_id = ${m.customerId},
+      price_type = ${m.priceType}, party_plan_price = ${m.partyPlanPrice},
+      party_plan_minutes = ${m.partyPlanMinutes}, memo = ${m.memo},
+      updated_at = ${m.updatedAt}, updated_by = ${m.updatedBy}
+    WHERE id = ${id} RETURNING *
+  `
+  return rows[0] ? toReservation(rows[0]) : null
+}
+
+export async function deleteReservation(id: string): Promise<boolean> {
+  if (!useDB) return store.reservations.delete(id)
+  const sql = getSQL()
+  await sql`DELETE FROM reservations WHERE id = ${id}`
   return true
 }
