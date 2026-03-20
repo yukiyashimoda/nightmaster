@@ -19,6 +19,7 @@ import { ReservationCard } from '@/components/reservation-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { FavoriteButton } from '@/components/favorite-button'
 import {
   AlertTriangle,
   ArrowLeft,
@@ -85,6 +86,7 @@ export default async function CustomerDetailPage({
           </Button>
         </Link>
         <h1 className="font-bold text-brand-plum flex-1 truncate">{customer.name}</h1>
+        <FavoriteButton customerId={id} isFavorite={customer.isFavorite} />
         {loggedIn && (
           <div className="flex items-center gap-2">
             <Link href={`/customers/${id}/edit`}>
