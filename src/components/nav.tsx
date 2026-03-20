@@ -141,6 +141,28 @@ export function Nav({ isLoggedIn, sessionUser }: NavProps) {
         {sidebarBottom}
       </aside>
 
+      {/* ─── スマホ：下部固定ナビ ─── */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-brand-beige shadow-lg">
+        <div className="flex">
+          {links.map(({ href, label, Icon }) => {
+            const active = pathname === href || (href !== '/' && pathname.startsWith(href))
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  'flex-1 flex flex-col items-center justify-center py-3 gap-1 text-xs font-medium transition-colors',
+                  active ? 'text-brand-plum' : 'text-brand-plum/50'
+                )}
+              >
+                <Icon size={20} />
+                {label}
+              </Link>
+            )
+          })}
+        </div>
+      </nav>
+
       {/* ─── PC：固定サイドバー ─── */}
       <aside className="hidden sm:flex flex-col fixed top-0 left-0 h-full w-60 bg-white border-r border-brand-beige z-40">
         {/* ロゴ */}
