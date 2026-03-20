@@ -341,6 +341,7 @@ export default async function CustomerDetailPage({
                   casts={casts}
                   bottlesByCustomer={bottlesByCustomer}
                   loggedIn={loggedIn}
+                  showDate
                 />
               ))}
             </div>

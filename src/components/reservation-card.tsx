@@ -19,6 +19,7 @@ interface ReservationCardProps {
   casts: Cast[]
   bottlesByCustomer: Map<string, number>
   loggedIn: boolean
+  showDate?: boolean
 }
 
 type ModalMode = 'view' | 'edit' | 'delete'
@@ -92,7 +93,7 @@ function CastPicker({
   )
 }
 
-export function ReservationCard({ reservation: r, customerMap, customers, castMap, casts, bottlesByCustomer, loggedIn }: ReservationCardProps) {
+export function ReservationCard({ reservation: r, customerMap, customers, castMap, casts, bottlesByCustomer, loggedIn, showDate }: ReservationCardProps) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [mode, setMode] = useState<ModalMode>('view')
@@ -188,6 +189,7 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Clock className="h-3.5 w-3.5 text-brand-plum/50 shrink-0" />
+            {showDate && <span className="text-sm font-semibold text-brand-plum">{r.date.replace(/-/g, '/')}</span>}
             <span className="text-sm font-semibold text-brand-plum">{r.time}</span>
             <span className="text-sm text-brand-plum">{r.partySize}名</span>
           </div>
