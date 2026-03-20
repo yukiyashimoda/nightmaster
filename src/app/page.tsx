@@ -1,21 +1,23 @@
-import { getCustomers, getBottles, getVisitRecords, getCasts } from '@/lib/kv'
+import { getCustomers, getBottles, getVisitRecords, getCasts, getReservations } from '@/lib/kv'
 import { isAuthenticated } from '@/lib/auth'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
-import { AlertTriangle, Calendar, Users, TrendingUp } from 'lucide-react'
+import { AlertTriangle, Calendar, CalendarDays, Users, TrendingUp } from 'lucide-react'
 import { GiBrandyBottle } from 'react-icons/gi'
 import { GiAmpleDress } from 'react-icons/gi'
 import { FaAddressCard } from 'react-icons/fa'
 import { CastRanking } from '@/components/cast-ranking'
+import { ReservationCard } from '@/components/reservation-card'
 
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
-  const [customers, bottles, visits, casts, loggedIn] = await Promise.all([
+  const [customers, bottles, visits, casts, reservations, loggedIn] = await Promise.all([
     getCustomers(),
     getBottles(),
     getVisitRecords(),
     getCasts(),
+    getReservations(),
     isAuthenticated(),
   ])
 
@@ -33,6 +35,16 @@ export default async function DashboardPage() {
 
   const castMap = new Map(casts.map((c) => [c.id, c]))
   const customerMap = new Map(customers.map((c) => [c.id, c]))
+
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const todayReservations = reservations
+    .filter((r) => r.date === todayStr)
+    .sort((a, b) => a.time.localeCompare(b.time))
+
+  const bottlesByCustomer = new Map<string, number>()
+  for (const b of bottles) {
+    bottlesByCustomer.set(b.customerId, (bottlesByCustomer.get(b.customerId) ?? 0) + 1)
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F1EE] px-4 py-6 pb-24 space-y-6">
@@ -74,6 +86,33 @@ export default async function DashboardPage() {
           </div>
           <p className="text-2xl font-bold text-brand-plum">{casts.length}<span className="text-sm font-normal ml-1">名</span></p>
         </Link>
+      </div>
+
+      {/* Today's Reservations */}
+      <div>
+        <h2 className="text-sm font-semibold text-brand-plum/60 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <CalendarDays className="h-4 w-4" />
+          本日の予約
+          <span className="text-brand-plum font-bold">{todayReservations.length}</span>
+        </h2>
+        {todayReservations.length === 0 ? (
+          <p className="text-sm text-brand-plum/50">本日の予約はありません</p>
+        ) : (
+          <div className="space-y-2">
+            {todayReservations.map((r) => (
+              <ReservationCard
+                key={r.id}
+                reservation={r}
+                customerMap={customerMap}
+                customers={customers}
+                castMap={castMap}
+                casts={casts}
+                bottlesByCustomer={bottlesByCustomer}
+                loggedIn={loggedIn}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Cast Ranking */}
