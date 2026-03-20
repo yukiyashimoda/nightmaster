@@ -173,19 +173,49 @@ export function CalendarView({ reservations, customerMap }: CalendarViewProps) {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-4 pb-28">
-      {/* Title + toggle */}
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold text-brand-plum">予約</h1>
-        <div className="flex rounded-lg border border-brand-beige overflow-hidden text-sm font-medium">
+      {/* Title + date picker + toggle */}
+      <div className="flex items-center gap-2 mb-4">
+        <h1 className="text-xl font-bold text-brand-plum shrink-0">予約</h1>
+
+        {/* Date picker — center */}
+        <div className="flex-1 flex justify-center">
+          {viewMode === 'month' ? (
+            <input
+              type="month"
+              value={`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`}
+              onChange={(e) => {
+                const [y, m] = e.target.value.split('-').map(Number)
+                if (y && m) setCurrentDate(new Date(y, m - 1, 1))
+              }}
+              className="w-full max-w-[160px] text-sm text-brand-plum border border-brand-beige rounded-lg px-2 py-1.5 bg-white outline-none focus:ring-2 focus:ring-brand-plum/20"
+            />
+          ) : (
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => {
+                const val = e.target.value
+                if (val) {
+                  setSelectedDate(val)
+                  setCurrentDate(getWeekStart(new Date(val)))
+                }
+              }}
+              className="w-full max-w-[160px] text-sm text-brand-plum border border-brand-beige rounded-lg px-2 py-1.5 bg-white outline-none focus:ring-2 focus:ring-brand-plum/20"
+            />
+          )}
+        </div>
+
+        {/* View toggle */}
+        <div className="flex rounded-lg border border-brand-beige overflow-hidden text-sm font-medium shrink-0">
           <button
             onClick={() => switchView('month')}
-            className={`px-4 py-1.5 transition-colors ${viewMode === 'month' ? 'bg-brand-plum text-white' : 'text-brand-plum/60 hover:bg-brand-beige/50'}`}
+            className={`px-3 py-1.5 transition-colors ${viewMode === 'month' ? 'bg-brand-plum text-white' : 'text-brand-plum/60 hover:bg-brand-beige/50'}`}
           >
             月
           </button>
           <button
             onClick={() => switchView('week')}
-            className={`px-4 py-1.5 transition-colors ${viewMode === 'week' ? 'bg-brand-plum text-white' : 'text-brand-plum/60 hover:bg-brand-beige/50'}`}
+            className={`px-3 py-1.5 transition-colors ${viewMode === 'week' ? 'bg-brand-plum text-white' : 'text-brand-plum/60 hover:bg-brand-beige/50'}`}
           >
             週
           </button>
