@@ -963,6 +963,7 @@ function _r(
     hasDesignation: isDesig,
     designatedCastId: isDesig ? _castIds[i % _castIds.length] : null,
     isAccompanied: isAccomp,
+    accompaniedCastId: isAccomp ? _castIds[(i + 5) % _castIds.length] : null,
     customerType: isNew ? 'new' : 'existing',
     customerId: isNew ? null : `customer-${(i % 30) + 1}`,
     guestName: isNew ? _guests[i % _guests.length] : '',

@@ -430,6 +430,7 @@ function toReservation(r: any): Reservation {
     hasDesignation: r.has_designation,
     designatedCastId: r.designated_cast_id ?? null,
     isAccompanied: r.is_accompanied,
+    accompaniedCastId: r.accompanied_cast_id ?? null,
     customerType: r.customer_type,
     customerId: r.customer_id ?? null,
     guestName: r.guest_name ?? '',
@@ -470,8 +471,8 @@ export async function createReservation(data: Omit<Reservation, 'id' | 'updatedA
   }
   const sql = getSQL()
   const rows = await sql`
-    INSERT INTO reservations (id, date, time, party_size, has_designation, designated_cast_id, is_accompanied, customer_type, customer_id, guest_name, price_type, party_plan_price, party_plan_minutes, memo, updated_at, updated_by)
-    VALUES (${id}, ${data.date}, ${data.time}, ${data.partySize}, ${data.hasDesignation}, ${data.designatedCastId}, ${data.isAccompanied}, ${data.customerType}, ${data.customerId}, ${data.guestName}, ${data.priceType}, ${data.partyPlanPrice}, ${data.partyPlanMinutes}, ${data.memo}, ${updatedAt}, ${data.updatedBy})
+    INSERT INTO reservations (id, date, time, party_size, has_designation, designated_cast_id, is_accompanied, accompanied_cast_id, customer_type, customer_id, guest_name, price_type, party_plan_price, party_plan_minutes, memo, updated_at, updated_by)
+    VALUES (${id}, ${data.date}, ${data.time}, ${data.partySize}, ${data.hasDesignation}, ${data.designatedCastId}, ${data.isAccompanied}, ${data.accompaniedCastId}, ${data.customerType}, ${data.customerId}, ${data.guestName}, ${data.priceType}, ${data.partyPlanPrice}, ${data.partyPlanMinutes}, ${data.memo}, ${updatedAt}, ${data.updatedBy})
     RETURNING *
   `
   return toReservation(rows[0])
@@ -493,7 +494,7 @@ export async function updateReservation(id: string, data: Partial<Omit<Reservati
     UPDATE reservations SET
       date = ${m.date}, time = ${m.time}, party_size = ${m.partySize},
       has_designation = ${m.hasDesignation}, designated_cast_id = ${m.designatedCastId},
-      is_accompanied = ${m.isAccompanied},
+      is_accompanied = ${m.isAccompanied}, accompanied_cast_id = ${m.accompaniedCastId},
       customer_type = ${m.customerType}, customer_id = ${m.customerId},
       guest_name = ${m.guestName}, price_type = ${m.priceType}, party_plan_price = ${m.partyPlanPrice},
       party_plan_minutes = ${m.partyPlanMinutes}, memo = ${m.memo},

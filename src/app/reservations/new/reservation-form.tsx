@@ -30,6 +30,8 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
   const [designatedCastId, setDesignatedCastId] = useState<string | null>(null)
   const [castQuery, setCastQuery] = useState('')
   const [isAccompanied, setIsAccompanied] = useState(false)
+  const [accompaniedCastId, setAccompaniedCastId] = useState<string | null>(null)
+  const [accompaniedCastQuery, setAccompaniedCastQuery] = useState('')
   const [customerType, setCustomerType] = useState<'existing' | 'new'>('new')
   const [guestName, setGuestName] = useState('')
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null)
@@ -54,8 +56,15 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
       )
     : casts
 
+  const filteredAccompaniedCasts = accompaniedCastQuery.trim()
+    ? casts.filter(
+        (c) => c.name.includes(accompaniedCastQuery) || c.ruby.includes(accompaniedCastQuery)
+      )
+    : casts
+
   const selectedCustomer = customers.find((c) => c.id === selectedCustomerId)
   const selectedCast = casts.find((c) => c.id === designatedCastId)
+  const selectedAccompaniedCast = casts.find((c) => c.id === accompaniedCastId)
 
   const Toggle = ({
     value, onChange, label, activeLabel, activeColor = 'bg-brand-plum',
@@ -87,6 +96,7 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
       hasDesignation,
       designatedCastId: hasDesignation ? designatedCastId : null,
       isAccompanied,
+      accompaniedCastId: isAccompanied ? accompaniedCastId : null,
       customerType,
       customerId: customerType === 'existing' ? selectedCustomerId : null,
       guestName: customerType === 'new' ? guestName : '',
@@ -225,16 +235,60 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
       </div>
 
       {/* 同伴・通常 ドロップダウン */}
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <Label className="text-brand-plum">来店種別</Label>
         <select
           value={isAccompanied ? 'accompanied' : 'normal'}
-          onChange={(e) => setIsAccompanied(e.target.value === 'accompanied')}
+          onChange={(e) => {
+            const v = e.target.value === 'accompanied'
+            setIsAccompanied(v)
+            if (!v) { setAccompaniedCastId(null); setAccompaniedCastQuery('') }
+          }}
           className="w-full rounded-lg border border-brand-beige bg-white px-3 py-2.5 text-sm text-brand-plum outline-none focus:ring-2 focus:ring-brand-plum/30"
         >
           <option value="normal">通常来店</option>
-          <option value="accompanied">同伴出勤</option>
+          <option value="accompanied">同伴</option>
         </select>
+
+        {/* キャスト選択（同伴の時・必須） */}
+        {isAccompanied && (
+          <div className="rounded-lg border border-brand-beige bg-white overflow-hidden">
+            <p className="text-xs text-brand-plum/60 px-3 pt-2 pb-1 font-medium">
+              同伴キャストを選択<span className="text-brand-coral ml-0.5">*</span>
+            </p>
+            {selectedAccompaniedCast ? (
+              <div className="flex items-center justify-between px-3 py-2 border-b border-brand-beige bg-brand-plum/5">
+                <span className="text-sm text-brand-plum font-medium">{selectedAccompaniedCast.name}</span>
+                <button type="button" onClick={() => setAccompaniedCastId(null)} className="text-brand-plum/50 hover:text-brand-coral">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : null}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-plum/50" />
+              <input
+                type="text"
+                value={accompaniedCastQuery}
+                onChange={(e) => setAccompaniedCastQuery(e.target.value)}
+                placeholder="名前・ふりがなで検索"
+                className="w-full pl-9 pr-3 py-2 text-sm bg-transparent border-0 outline-none text-brand-plum placeholder:text-brand-plum/50"
+              />
+            </div>
+            <div className="max-h-40 overflow-y-auto border-t border-brand-beige">
+              {filteredAccompaniedCasts.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => { setAccompaniedCastId(c.id); setAccompaniedCastQuery('') }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-brand-beige/50 transition-colors ${accompaniedCastId === c.id ? 'bg-brand-beige/50' : ''}`}
+                >
+                  <span className="text-sm text-brand-plum">{c.name}</span>
+                  <span className="text-xs text-brand-plum/50">({c.ruby})</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 顧客か初来店か */}

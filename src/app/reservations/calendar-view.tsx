@@ -41,6 +41,7 @@ function ReservationCard({
 }) {
   const customer = reservation.customerId ? customerMap.get(reservation.customerId) : null
   const designatedCast = reservation.designatedCastId ? castMap.get(reservation.designatedCastId) : null
+  const accompaniedCast = reservation.accompaniedCastId ? castMap.get(reservation.accompaniedCastId) : null
   return (
     <div className="bg-white rounded-lg border border-brand-beige p-3 space-y-1.5">
       <div className="flex items-center justify-between gap-2">
@@ -56,7 +57,9 @@ function ReservationCard({
             </span>
           )}
           {reservation.isAccompanied && (
-            <span className="text-[10px] bg-brand-gold/10 text-brand-gold px-1.5 py-0.5 rounded-full font-medium">同伴</span>
+            <span className="text-[10px] bg-brand-gold/10 text-brand-gold px-1.5 py-0.5 rounded-full font-medium">
+              同伴{accompaniedCast ? `：${accompaniedCast.name}` : ''}
+            </span>
           )}
           {reservation.priceType === 'party' && (
             <span className="text-[10px] bg-brand-coral/10 text-brand-coral px-1.5 py-0.5 rounded-full font-medium">パーティー</span>
