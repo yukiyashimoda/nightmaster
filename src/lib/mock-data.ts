@@ -1,4 +1,4 @@
-import type { Customer, Bottle, Cast, VisitRecord } from '@/types'
+import type { Customer, Bottle, Cast, VisitRecord, Reservation } from '@/types'
 
 export const mockCasts: Cast[] = [
   { id: 'cast-1', name: '桜', ruby: 'さくら', memo: 'ナンバーワン。シャンパン担当。', updatedAt: new Date().toISOString(), updatedBy: '' },
@@ -937,4 +937,84 @@ export const mockVisitRecords: VisitRecord[] = [
   { id: 'visit-45', customerId: 'customer-94', visitDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), designatedCastIds: ['cast-25'], inStoreCastIds: ['cast-28'], bottlesOpened: ['bottle-47'], bottlesUsed: ['bottle-46'], memo: 'アルマンドゴールド開封。今週も楽しんでいただいた。' },
   { id: 'visit-46', customerId: 'customer-100', visitDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(), designatedCastIds: ['cast-31'], inStoreCastIds: ['cast-32', 'cast-33'], bottlesOpened: ['bottle-49'], bottlesUsed: [], memo: 'ブリュット開封。大人数来店。' },
   { id: 'visit-47', customerId: 'customer-100', visitDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), designatedCastIds: ['cast-31', 'cast-32'], inStoreCastIds: ['cast-24', 'cast-25'], bottlesOpened: ['bottle-48'], bottlesUsed: ['bottle-49'], memo: 'クリスタルロゼ開封。シャンパンタワー実施。大盛況。' },
+]
+
+// ─── Dummy Reservations (3 months: Feb–Apr 2026, no Sundays/holidays) ─────────
+
+const _castIds = ['cast-1','cast-2','cast-3','cast-4','cast-5','cast-6','cast-7','cast-8','cast-9','cast-10','cast-11','cast-12','cast-13','cast-14','cast-15','cast-16','cast-17','cast-18','cast-19','cast-20']
+const _times = ['19:00','19:30','20:00','20:30','21:00','21:30','22:00','22:30','23:00','23:30']
+const _sizes = [2,2,1,3,2,2,1,4,2,2]
+const _guests = ['田中','鈴木','佐藤','高橋','伊藤','渡辺','山本','中村','小林','加藤','松本','井上','木村','林','斎藤']
+
+function _r(
+  id: number, date: string, tIdx: number,
+  opts?: { partyPlan?: boolean; accompanied?: boolean }
+): Reservation {
+  const i = id - 1
+  const isNew = i % 4 === 3
+  const isDesig = i % 3 === 0
+  const isAccomp = opts?.accompanied ?? (i % 9 === 2)
+  const isPP = opts?.partyPlan ?? false
+  return {
+    id: `res-${id}`,
+    date,
+    time: _times[tIdx % _times.length],
+    partySize: _sizes[i % _sizes.length],
+    hasDesignation: isDesig,
+    designatedCastId: isDesig ? _castIds[i % _castIds.length] : null,
+    isAccompanied: isAccomp,
+    customerType: isNew ? 'new' : 'existing',
+    customerId: isNew ? null : `customer-${(i % 30) + 1}`,
+    guestName: isNew ? _guests[i % _guests.length] : '',
+    priceType: isPP ? 'party' : 'normal',
+    partyPlanPrice: isPP ? [30000,25000,40000,35000][i % 4] : null,
+    partyPlanMinutes: isPP ? [90,120,90,120][i % 4] : null,
+    memo: '',
+    updatedAt: `${date}T12:00:00.000Z`,
+    updatedBy: 'test',
+  }
+}
+
+export const mockReservations: Reservation[] = [
+  // ── February 2026 ──
+  _r(1,'2026-02-02',0), _r(2,'2026-02-03',2), _r(3,'2026-02-04',1), _r(4,'2026-02-05',3),
+  _r(5,'2026-02-06',0), _r(6,'2026-02-06',4), _r(7,'2026-02-06',7,{partyPlan:true}),
+  _r(8,'2026-02-07',1), _r(9,'2026-02-07',5), _r(10,'2026-02-07',3,{partyPlan:true}),
+  _r(11,'2026-02-09',2), _r(12,'2026-02-10',0),
+  _r(13,'2026-02-12',4),
+  _r(14,'2026-02-13',0), _r(15,'2026-02-13',2), _r(16,'2026-02-13',6,{partyPlan:true}),
+  _r(17,'2026-02-14',1), _r(18,'2026-02-14',4), _r(19,'2026-02-14',7,{partyPlan:true}),
+  _r(20,'2026-02-16',0), _r(21,'2026-02-17',2), _r(22,'2026-02-18',1), _r(23,'2026-02-19',3),
+  _r(24,'2026-02-20',0), _r(25,'2026-02-20',4), _r(26,'2026-02-20',8),
+  _r(27,'2026-02-21',2), _r(28,'2026-02-21',5), _r(29,'2026-02-21',7,{partyPlan:true}),
+  _r(30,'2026-02-24',1), _r(31,'2026-02-25',3), _r(32,'2026-02-26',0),
+  _r(33,'2026-02-27',0), _r(34,'2026-02-27',4), _r(35,'2026-02-27',7),
+  _r(36,'2026-02-28',1), _r(37,'2026-02-28',5), _r(38,'2026-02-28',8,{partyPlan:true}),
+  // ── March 2026 ──
+  _r(39,'2026-03-02',2), _r(40,'2026-03-03',0), _r(41,'2026-03-04',3), _r(42,'2026-03-05',1),
+  _r(43,'2026-03-06',0), _r(44,'2026-03-06',4), _r(45,'2026-03-06',7,{partyPlan:true}),
+  _r(46,'2026-03-07',1), _r(47,'2026-03-07',5), _r(48,'2026-03-07',8,{partyPlan:true}),
+  _r(49,'2026-03-09',2), _r(50,'2026-03-10',0), _r(51,'2026-03-11',3), _r(52,'2026-03-12',1),
+  _r(53,'2026-03-13',0), _r(54,'2026-03-13',4), _r(55,'2026-03-13',7),
+  _r(56,'2026-03-14',2), _r(57,'2026-03-14',5), _r(58,'2026-03-14',8,{partyPlan:true}),
+  _r(59,'2026-03-16',0), _r(60,'2026-03-17',2), _r(61,'2026-03-18',4), _r(62,'2026-03-19',1),
+  _r(63,'2026-03-21',0), _r(64,'2026-03-21',4), _r(65,'2026-03-21',7,{partyPlan:true}),
+  _r(66,'2026-03-23',2), _r(67,'2026-03-24',0), _r(68,'2026-03-25',3), _r(69,'2026-03-26',1),
+  _r(70,'2026-03-27',0), _r(71,'2026-03-27',4), _r(72,'2026-03-27',7),
+  _r(73,'2026-03-28',2), _r(74,'2026-03-28',5), _r(75,'2026-03-28',9,{partyPlan:true}),
+  _r(76,'2026-03-30',0), _r(77,'2026-03-30',4), _r(78,'2026-03-31',2),
+  // ── April 2026 ──
+  _r(79,'2026-04-01',0), _r(80,'2026-04-02',2), _r(81,'2026-04-02',5),
+  _r(82,'2026-04-03',0), _r(83,'2026-04-03',4), _r(84,'2026-04-03',8,{partyPlan:true}),
+  _r(85,'2026-04-04',2), _r(86,'2026-04-04',5), _r(87,'2026-04-04',8,{partyPlan:true}),
+  _r(88,'2026-04-06',1), _r(89,'2026-04-07',3), _r(90,'2026-04-08',0), _r(91,'2026-04-09',2),
+  _r(92,'2026-04-10',0), _r(93,'2026-04-10',4), _r(94,'2026-04-10',7,{partyPlan:true}),
+  _r(95,'2026-04-11',1), _r(96,'2026-04-11',5), _r(97,'2026-04-11',8,{partyPlan:true}),
+  _r(98,'2026-04-13',2), _r(99,'2026-04-14',0), _r(100,'2026-04-15',3), _r(101,'2026-04-16',1),
+  _r(102,'2026-04-17',0), _r(103,'2026-04-17',4), _r(104,'2026-04-17',7),
+  _r(105,'2026-04-18',2), _r(106,'2026-04-18',5), _r(107,'2026-04-18',9,{partyPlan:true}),
+  _r(108,'2026-04-20',0), _r(109,'2026-04-21',2), _r(110,'2026-04-22',4), _r(111,'2026-04-23',1),
+  _r(112,'2026-04-24',0), _r(113,'2026-04-24',4), _r(114,'2026-04-24',7),
+  _r(115,'2026-04-25',2), _r(116,'2026-04-25',5), _r(117,'2026-04-25',8,{partyPlan:true}),
+  _r(118,'2026-04-27',0), _r(119,'2026-04-28',2), _r(120,'2026-04-30',4),
 ]

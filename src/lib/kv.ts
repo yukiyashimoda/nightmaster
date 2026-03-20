@@ -5,6 +5,7 @@ import {
   mockBottles,
   mockCasts,
   mockVisitRecords,
+  mockReservations,
 } from './mock-data'
 
 // In-memory fallback for local dev without DATABASE_URL
@@ -21,7 +22,7 @@ const store = {
   visitRecords: new Map<string, VisitRecord>(
     mockVisitRecords.map((v) => [v.id, v])
   ),
-  reservations: new Map<string, Reservation>(),
+  reservations: new Map<string, Reservation>(mockReservations.map((r) => [r.id, r])),
 }
 
 function generateId(): string {
