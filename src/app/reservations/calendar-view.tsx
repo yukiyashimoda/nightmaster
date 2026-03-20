@@ -3,11 +3,12 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, Plus, Clock } from 'lucide-react'
-import type { Customer, Reservation } from '@/types'
+import type { Cast, Customer, Reservation } from '@/types'
 
 interface CalendarViewProps {
   reservations: Reservation[]
   customerMap: Map<string, Customer>
+  castMap: Map<string, Cast>
 }
 
 const DAY_LABELS = ['日', '月', '火', '水', '木', '金', '土']
@@ -32,11 +33,14 @@ function getWeekStart(d: Date): Date {
 function ReservationCard({
   reservation,
   customerMap,
+  castMap,
 }: {
   reservation: Reservation
   customerMap: Map<string, Customer>
+  castMap: Map<string, Cast>
 }) {
   const customer = reservation.customerId ? customerMap.get(reservation.customerId) : null
+  const designatedCast = reservation.designatedCastId ? castMap.get(reservation.designatedCastId) : null
   return (
     <div className="bg-white rounded-lg border border-brand-beige p-3 space-y-1.5">
       <div className="flex items-center justify-between gap-2">
@@ -47,7 +51,9 @@ function ReservationCard({
         </div>
         <div className="flex gap-1">
           {reservation.hasDesignation && (
-            <span className="text-[10px] bg-brand-plum/10 text-brand-plum px-1.5 py-0.5 rounded-full font-medium">指名</span>
+            <span className="text-[10px] bg-brand-plum/10 text-brand-plum px-1.5 py-0.5 rounded-full font-medium">
+              指名{designatedCast ? `：${designatedCast.name}` : ''}
+            </span>
           )}
           {reservation.isAccompanied && (
             <span className="text-[10px] bg-brand-gold/10 text-brand-gold px-1.5 py-0.5 rounded-full font-medium">同伴</span>
@@ -85,7 +91,7 @@ function ReservationCard({
 const BUFFER_WEEKS = 26           // 前後26週 = 約1年
 const TOTAL_WEEKS = BUFFER_WEEKS * 2 + 1  // 53週
 
-export function CalendarView({ reservations, customerMap }: CalendarViewProps) {
+export function CalendarView({ reservations, customerMap, castMap }: CalendarViewProps) {
   const today = useMemo(() => {
     const d = new Date()
     d.setHours(0, 0, 0, 0)
@@ -383,7 +389,7 @@ export function CalendarView({ reservations, customerMap }: CalendarViewProps) {
               <p className="text-sm text-brand-plum/30 py-2">予約なし</p>
             ) : (
               selectedReservations.map((r) => (
-                <ReservationCard key={r.id} reservation={r} customerMap={customerMap} />
+                <ReservationCard key={r.id} reservation={r} customerMap={customerMap} castMap={castMap} />
               ))
             )}
           </div>
@@ -467,7 +473,7 @@ export function CalendarView({ reservations, customerMap }: CalendarViewProps) {
               <p className="text-sm text-brand-plum/30 py-2">予約なし</p>
             ) : (
               selectedReservations.map((r) => (
-                <ReservationCard key={r.id} reservation={r} customerMap={customerMap} />
+                <ReservationCard key={r.id} reservation={r} customerMap={customerMap} castMap={castMap} />
               ))
             )}
           </div>
