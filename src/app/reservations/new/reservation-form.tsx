@@ -8,13 +8,14 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Search, X } from 'lucide-react'
 import { createReservationAction } from './actions'
-import type { Customer } from '@/types'
+import type { Customer, Cast } from '@/types'
 
 interface ReservationFormProps {
   customers: Customer[]
+  casts: Cast[]
 }
 
-export function ReservationForm({ customers }: ReservationFormProps) {
+export function ReservationForm({ customers, casts }: ReservationFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -24,8 +25,11 @@ export function ReservationForm({ customers }: ReservationFormProps) {
   const [time, setTime] = useState('20:00')
   const [partySize, setPartySize] = useState(2)
   const [hasDesignation, setHasDesignation] = useState(false)
+  const [designatedCastId, setDesignatedCastId] = useState<string | null>(null)
+  const [castQuery, setCastQuery] = useState('')
   const [isAccompanied, setIsAccompanied] = useState(false)
   const [customerType, setCustomerType] = useState<'existing' | 'new'>('new')
+  const [guestName, setGuestName] = useState('')
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null)
   const [customerQuery, setCustomerQuery] = useState('')
   const [priceType, setPriceType] = useState<'normal' | 'party'>('normal')
@@ -42,7 +46,14 @@ export function ReservationForm({ customers }: ReservationFormProps) {
       )
     : customers
 
+  const filteredCasts = castQuery.trim()
+    ? casts.filter(
+        (c) => c.name.includes(castQuery) || c.ruby.includes(castQuery)
+      )
+    : casts
+
   const selectedCustomer = customers.find((c) => c.id === selectedCustomerId)
+  const selectedCast = casts.find((c) => c.id === designatedCastId)
 
   const Toggle = ({
     value, onChange, label, activeLabel, activeColor = 'bg-brand-plum',
@@ -72,9 +83,11 @@ export function ReservationForm({ customers }: ReservationFormProps) {
       time,
       partySize,
       hasDesignation,
+      designatedCastId: hasDesignation ? designatedCastId : null,
       isAccompanied,
       customerType,
       customerId: customerType === 'existing' ? selectedCustomerId : null,
+      guestName: customerType === 'new' ? guestName : '',
       priceType,
       partyPlanPrice: priceType === 'party' && partyPlanPrice ? Number(partyPlanPrice) : null,
       partyPlanMinutes: priceType === 'party' && partyPlanMinutes ? Number(partyPlanMinutes) : null,
@@ -128,13 +141,61 @@ export function ReservationForm({ customers }: ReservationFormProps) {
       </div>
 
       {/* 指名の有無 */}
-      <div className="rounded-lg border border-brand-beige bg-white p-3">
-        <Toggle value={hasDesignation} onChange={setHasDesignation} label="指名なし" activeLabel="指名あり" />
+      <div className="space-y-2">
+        <div className="rounded-lg border border-brand-beige bg-white p-3">
+          <Toggle value={hasDesignation} onChange={(v) => { setHasDesignation(v); if (!v) setDesignatedCastId(null) }} label="指名なし" activeLabel="指名あり" />
+        </div>
+
+        {/* キャスト選択（指名ありの時） */}
+        {hasDesignation && (
+          <div className="rounded-lg border border-brand-beige bg-white overflow-hidden">
+            <p className="text-xs text-brand-plum/60 px-3 pt-2 pb-1 font-medium">指名キャストを選択</p>
+            {selectedCast ? (
+              <div className="flex items-center justify-between px-3 py-2 border-b border-brand-beige bg-brand-plum/5">
+                <span className="text-sm text-brand-plum font-medium">{selectedCast.name}</span>
+                <button type="button" onClick={() => setDesignatedCastId(null)} className="text-brand-plum/50 hover:text-brand-coral">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : null}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-plum/50" />
+              <input
+                type="text"
+                value={castQuery}
+                onChange={(e) => setCastQuery(e.target.value)}
+                placeholder="名前・ふりがなで検索"
+                className="w-full pl-9 pr-3 py-2 text-sm bg-transparent border-0 outline-none text-brand-plum placeholder:text-brand-plum/50"
+              />
+            </div>
+            <div className="max-h-40 overflow-y-auto border-t border-brand-beige">
+              {filteredCasts.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => { setDesignatedCastId(c.id); setCastQuery('') }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-brand-beige/50 transition-colors ${designatedCastId === c.id ? 'bg-brand-beige/50' : ''}`}
+                >
+                  <span className="text-sm text-brand-plum">{c.name}</span>
+                  <span className="text-xs text-brand-plum/50">({c.ruby})</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* 同伴出勤 */}
-      <div className="rounded-lg border border-brand-beige bg-white p-3">
-        <Toggle value={isAccompanied} onChange={setIsAccompanied} label="通常来店" activeLabel="同伴出勤" activeColor="bg-brand-gold" />
+      {/* 同伴・通常 ドロップダウン */}
+      <div className="space-y-1.5">
+        <Label className="text-brand-plum">来店種別</Label>
+        <select
+          value={isAccompanied ? 'accompanied' : 'normal'}
+          onChange={(e) => setIsAccompanied(e.target.value === 'accompanied')}
+          className="w-full rounded-lg border border-brand-beige bg-white px-3 py-2.5 text-sm text-brand-plum outline-none focus:ring-2 focus:ring-brand-plum/30"
+        >
+          <option value="normal">通常来店</option>
+          <option value="accompanied">同伴出勤</option>
+        </select>
       </div>
 
       {/* 顧客か初来店か */}
@@ -156,6 +217,18 @@ export function ReservationForm({ customers }: ReservationFormProps) {
             既存顧客
           </button>
         </div>
+
+        {/* 初来店：予約名 */}
+        {customerType === 'new' && (
+          <div className="mt-2">
+            <Input
+              type="text"
+              value={guestName}
+              onChange={(e) => setGuestName(e.target.value)}
+              placeholder="予約名（任意）"
+            />
+          </div>
+        )}
 
         {/* 既存顧客選択 */}
         {customerType === 'existing' && (

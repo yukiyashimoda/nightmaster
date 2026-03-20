@@ -42,9 +42,11 @@ export interface Reservation {
   time: string           // HH:MM
   partySize: number      // 人数
   hasDesignation: boolean  // 指名の有無
+  designatedCastId: string | null  // 指名キャスト
   isAccompanied: boolean   // 同伴出勤か通常か
   customerType: 'existing' | 'new'  // 顧客か初来店か
   customerId: string | null         // 既存顧客の場合
+  guestName: string                 // 初来店の場合の予約名
   priceType: 'normal' | 'party'     // 通常料金かパーティープランか
   partyPlanPrice: number | null     // パーティープラン金額
   partyPlanMinutes: number | null   // パーティープランセット時間（分）
