@@ -441,6 +441,7 @@ function toReservation(r: any): Reservation {
     priceType: r.price_type,
     partyPlanPrice: r.party_plan_price ?? null,
     partyPlanMinutes: r.party_plan_minutes ?? null,
+    phone: r.phone ?? '',
     memo: r.memo ?? '',
     updatedAt: r.updated_at,
     updatedBy: r.updated_by,
@@ -475,8 +476,8 @@ export async function createReservation(data: Omit<Reservation, 'id' | 'updatedA
   }
   const sql = getSQL()
   const rows = await sql`
-    INSERT INTO reservations (id, date, time, party_size, has_designation, designated_cast_ids, is_accompanied, accompanied_cast_ids, customer_type, customer_id, guest_name, price_type, party_plan_price, party_plan_minutes, memo, updated_at, updated_by)
-    VALUES (${id}, ${data.date}, ${data.time}, ${data.partySize}, ${data.hasDesignation}, ${data.designatedCastIds}, ${data.isAccompanied}, ${data.accompaniedCastIds}, ${data.customerType}, ${data.customerId}, ${data.guestName}, ${data.priceType}, ${data.partyPlanPrice}, ${data.partyPlanMinutes}, ${data.memo}, ${updatedAt}, ${data.updatedBy})
+    INSERT INTO reservations (id, date, time, party_size, has_designation, designated_cast_ids, is_accompanied, accompanied_cast_ids, customer_type, customer_id, guest_name, phone, price_type, party_plan_price, party_plan_minutes, memo, updated_at, updated_by)
+    VALUES (${id}, ${data.date}, ${data.time}, ${data.partySize}, ${data.hasDesignation}, ${data.designatedCastIds}, ${data.isAccompanied}, ${data.accompaniedCastIds}, ${data.customerType}, ${data.customerId}, ${data.guestName}, ${data.phone}, ${data.priceType}, ${data.partyPlanPrice}, ${data.partyPlanMinutes}, ${data.memo}, ${updatedAt}, ${data.updatedBy})
     RETURNING *
   `
   return toReservation(rows[0])
@@ -500,7 +501,7 @@ export async function updateReservation(id: string, data: Partial<Omit<Reservati
       has_designation = ${m.hasDesignation}, designated_cast_ids = ${m.designatedCastIds},
       is_accompanied = ${m.isAccompanied}, accompanied_cast_ids = ${m.accompaniedCastIds},
       customer_type = ${m.customerType}, customer_id = ${m.customerId},
-      guest_name = ${m.guestName}, price_type = ${m.priceType}, party_plan_price = ${m.partyPlanPrice},
+      guest_name = ${m.guestName}, phone = ${m.phone}, price_type = ${m.priceType}, party_plan_price = ${m.partyPlanPrice},
       party_plan_minutes = ${m.partyPlanMinutes}, memo = ${m.memo},
       updated_at = ${m.updatedAt}, updated_by = ${m.updatedBy}
     WHERE id = ${id} RETURNING *

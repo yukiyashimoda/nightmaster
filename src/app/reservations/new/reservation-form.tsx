@@ -13,6 +13,7 @@ import type { Customer, Cast } from '@/types'
 interface ReservationFormProps {
   customers: Customer[]
   casts: Cast[]
+  bottlesByCustomer: Map<string, number>
 }
 
 // 複数選択キャストピッカー
@@ -96,7 +97,7 @@ function CastMultiPicker({
   )
 }
 
-export function ReservationForm({ customers, casts }: ReservationFormProps) {
+export function ReservationForm({ customers, casts, bottlesByCustomer }: ReservationFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -118,6 +119,7 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
   const [priceType, setPriceType] = useState<'normal' | 'party'>('normal')
   const [partyPlanPrice, setPartyPlanPrice] = useState<string>('')
   const [partyPlanMinutes, setPartyPlanMinutes] = useState<string>('90')
+  const [phone, setPhone] = useState('')
   const [memo, setMemo] = useState('')
 
   const filteredCustomers = customerQuery.trim()
@@ -173,6 +175,7 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
       customerType,
       customerId: customerType === 'existing' ? selectedCustomerId : null,
       guestName: customerType === 'new' ? guestName : '',
+      phone,
       priceType,
       partyPlanPrice: priceType === 'party' && partyPlanPrice ? Number(partyPlanPrice) : null,
       partyPlanMinutes: priceType === 'party' && partyPlanMinutes ? Number(partyPlanMinutes) : null,
@@ -235,6 +238,18 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
       <div className="space-y-1.5">
         <Label className="text-brand-plum">日付<span className="text-brand-coral ml-0.5">*</span></Label>
         <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+      </div>
+
+      {/* 連絡先（電話番号） */}
+      <div className="space-y-1.5">
+        <Label className="text-brand-plum">連絡先（電話番号）<span className="text-brand-coral ml-0.5">*</span></Label>
+        <Input
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="例：090-1234-5678"
+          required
+        />
       </div>
 
       {/* 時間 */}
@@ -345,9 +360,16 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
         {customerType === 'existing' && (
           <div className="rounded-lg border border-brand-beige bg-white overflow-hidden mt-2">
             {selectedCustomer ? (
-              <div className="flex items-center justify-between px-3 py-2 border-b border-brand-beige">
-                <span className="text-sm text-brand-plum font-medium">{selectedCustomer.name}</span>
-                <button type="button" onClick={() => setSelectedCustomerId(null)} className="text-brand-plum/50 hover:text-brand-coral">
+              <div className="flex items-center justify-between px-3 py-2 border-b border-brand-beige bg-brand-plum/5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm text-brand-plum font-medium">{selectedCustomer.name}</span>
+                  {(bottlesByCustomer.get(selectedCustomer.id) ?? 0) > 0 && (
+                    <span className="text-[11px] bg-brand-gold/15 text-brand-gold px-2 py-0.5 rounded-full font-medium">
+                      🍾 {bottlesByCustomer.get(selectedCustomer.id)}本
+                    </span>
+                  )}
+                </div>
+                <button type="button" onClick={() => setSelectedCustomerId(null)} className="text-brand-plum/50 hover:text-brand-coral shrink-0">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -363,17 +385,23 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
               />
             </div>
             <div className="max-h-40 overflow-y-auto border-t border-brand-beige">
-              {filteredCustomers.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => { setSelectedCustomerId(c.id); setCustomerQuery('') }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-brand-beige/50 transition-colors ${selectedCustomerId === c.id ? 'bg-brand-beige/50' : ''}`}
-                >
-                  <span className="text-sm text-brand-plum">{c.name}</span>
-                  <span className="text-xs text-brand-plum/50">({c.ruby})</span>
-                </button>
-              ))}
+              {filteredCustomers.map((c) => {
+                const bottleCount = bottlesByCustomer.get(c.id) ?? 0
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => { setSelectedCustomerId(c.id); setCustomerQuery('') }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-brand-beige/50 transition-colors ${selectedCustomerId === c.id ? 'bg-brand-beige/50' : ''}`}
+                  >
+                    <span className="text-sm text-brand-plum">{c.name}</span>
+                    <span className="text-xs text-brand-plum/50">({c.ruby})</span>
+                    {bottleCount > 0 && (
+                      <span className="ml-auto text-[11px] text-brand-gold font-medium">🍾 {bottleCount}本</span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}

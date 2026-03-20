@@ -51,6 +51,7 @@ export interface Reservation {
   priceType: 'normal' | 'party'     // 通常料金かパーティープランか
   partyPlanPrice: number | null     // パーティープラン金額
   partyPlanMinutes: number | null   // パーティープランセット時間（分）
+  phone: string
   memo: string
   updatedAt: string
   updatedBy: string

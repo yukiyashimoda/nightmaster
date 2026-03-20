@@ -967,6 +967,7 @@ function _r(
     customerType: isNew ? 'new' : 'existing',
     customerId: isNew ? null : `customer-${(i % 30) + 1}`,
     guestName: isNew ? _guests[i % _guests.length] : '',
+    phone: '',
     priceType: isPP ? 'party' : 'normal',
     partyPlanPrice: isPP ? [30000,25000,40000,35000][i % 4] : null,
     partyPlanMinutes: isPP ? [90,120,90,120][i % 4] : null,
