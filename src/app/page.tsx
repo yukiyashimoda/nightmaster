@@ -6,6 +6,7 @@ import { AlertTriangle, Calendar, Users, TrendingUp } from 'lucide-react'
 import { GiBrandyBottle } from 'react-icons/gi'
 import { GiAmpleDress } from 'react-icons/gi'
 import { FaAddressCard } from 'react-icons/fa'
+import { CastRanking } from '@/components/cast-ranking'
 
 export const dynamic = 'force-dynamic'
 
@@ -144,6 +145,9 @@ export default async function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Cast Ranking */}
+      <CastRanking casts={casts} visits={visits} />
 
       {/* Quick Links */}
       {loggedIn && (
