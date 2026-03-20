@@ -1,10 +1,11 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, Edit } from 'lucide-react'
+import { ArrowLeft, Calendar, CalendarDays, Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { getCast, getVisitRecordsByCast, getVisitRecordsByInStoreCast, getCustomers, getBottles, getCasts } from '@/lib/kv'
+import { getCast, getVisitRecordsByCast, getVisitRecordsByInStoreCast, getCustomers, getBottles, getCasts, getReservationsByCast } from '@/lib/kv'
 import { CastVisitGroup } from '@/components/cast-visit-group'
 import { CustomerCard } from '@/components/customer-card'
+import { ReservationCard } from '@/components/reservation-card'
 import { isAuthenticated } from '@/lib/auth'
 import { formatEditedBy } from '@/lib/utils'
 import { DeleteConfirmButton } from '@/components/delete-confirm-button'
@@ -18,10 +19,11 @@ export default async function CastDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [cast, visits, inStoreVisits, customers, allCasts, bottles, loggedIn] = await Promise.all([
+  const [cast, visits, inStoreVisits, reservations, customers, allCasts, bottles, loggedIn] = await Promise.all([
     getCast(id),
     getVisitRecordsByCast(id),
     getVisitRecordsByInStoreCast(id),
+    getReservationsByCast(id),
     getCustomers(),
     getCasts(),
     getBottles(),
@@ -31,6 +33,11 @@ export default async function CastDetailPage({
   if (!cast) notFound()
 
   const customerMap = new Map(customers.map((c) => [c.id, c]))
+  const castMap = new Map(allCasts.map((c) => [c.id, c]))
+  const bottlesByCustomer = new Map<string, number>()
+  for (const b of bottles) {
+    bottlesByCustomer.set(b.customerId, (bottlesByCustomer.get(b.customerId) ?? 0) + 1)
+  }
 
   // 場内指名時の本指名キャスト上位5名
   const coDesignatedCount = new Map<string, number>()
@@ -221,6 +228,33 @@ export default async function CastDetailPage({
             </div>
           </div>
         )}
+
+        {/* Reservations */}
+        <div>
+          <h3 className="text-sm font-semibold text-brand-plum/60 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <CalendarDays className="h-4 w-4" />
+            予約 ({reservations.length})
+          </h3>
+          {reservations.length === 0 ? (
+            <p className="text-brand-plum/50 text-sm">予約はありません</p>
+          ) : (
+            <div className="space-y-2">
+              {reservations.map((res) => (
+                <ReservationCard
+                  key={res.id}
+                  reservation={res}
+                  customerMap={customerMap}
+                  customers={customers}
+                  castMap={castMap}
+                  casts={allCasts}
+                  bottlesByCustomer={bottlesByCustomer}
+                  loggedIn={loggedIn}
+                  showDate
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Visit Records */}
         <div>

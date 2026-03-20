@@ -521,6 +521,17 @@ export async function getReservationsByCustomer(customerId: string): Promise<Res
   return rows.map(toReservation)
 }
 
+export async function getReservationsByCast(castId: string): Promise<Reservation[]> {
+  if (!useDB) {
+    return Array.from(store.reservations.values())
+      .filter((r) => r.designatedCastIds.includes(castId) || r.accompaniedCastIds.includes(castId))
+      .sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`))
+  }
+  const sql = getSQL()
+  const rows = await sql`SELECT * FROM reservations WHERE ${castId} = ANY(designated_cast_ids) OR ${castId} = ANY(accompanied_cast_ids) ORDER BY date, time`
+  return rows.map(toReservation)
+}
+
 export async function deleteReservation(id: string): Promise<boolean> {
   if (!useDB) return store.reservations.delete(id)
   const sql = getSQL()
