@@ -21,7 +21,8 @@ export default async function DashboardPage() {
     isAuthenticated(),
   ])
 
-  const now = new Date()
+  // JST（UTC+9）基準で日付を計算
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }))
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
@@ -50,7 +51,7 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-[#F5F1EE] px-4 py-6 pb-24 space-y-6">
       <div>
         <h1 className="text-xl font-bold text-brand-plum">ダッシュボード</h1>
-        <p className="text-sm text-brand-plum/50 mt-0.5">{formatDate(now.toISOString())}</p>
+        <p className="text-sm text-brand-plum/50 mt-0.5">{now.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
       </div>
 
       {/* Stats Grid */}
