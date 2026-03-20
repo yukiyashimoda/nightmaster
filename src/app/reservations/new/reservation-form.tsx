@@ -6,13 +6,94 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Search, X } from 'lucide-react'
+import { Search, X, Check } from 'lucide-react'
 import { createReservationAction } from './actions'
 import type { Customer, Cast } from '@/types'
 
 interface ReservationFormProps {
   customers: Customer[]
   casts: Cast[]
+}
+
+// 複数選択キャストピッカー
+function CastMultiPicker({
+  casts,
+  selectedIds,
+  onChange,
+  label,
+  required,
+}: {
+  casts: Cast[]
+  selectedIds: string[]
+  onChange: (ids: string[]) => void
+  label: string
+  required?: boolean
+}) {
+  const [query, setQuery] = useState('')
+  const filtered = query.trim()
+    ? casts.filter((c) => c.name.includes(query) || c.ruby.includes(query))
+    : casts
+
+  function toggle(id: string) {
+    onChange(selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id])
+  }
+
+  const selectedCasts = casts.filter((c) => selectedIds.includes(c.id))
+
+  return (
+    <div className="rounded-lg border border-brand-beige bg-white overflow-hidden">
+      <p className="text-xs text-brand-plum/60 px-3 pt-2 pb-1 font-medium">
+        {label}{required && <span className="text-brand-coral ml-0.5">*</span>}
+      </p>
+      {/* 選択済みチップ */}
+      {selectedCasts.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 px-3 pb-2">
+          {selectedCasts.map((c) => (
+            <span
+              key={c.id}
+              className="flex items-center gap-1 text-xs bg-brand-plum/10 text-brand-plum px-2 py-0.5 rounded-full font-medium"
+            >
+              {c.name}
+              <button type="button" onClick={() => toggle(c.id)} className="hover:text-brand-coral">
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      {/* 検索 */}
+      <div className="relative border-t border-brand-beige">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-plum/50" />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="名前・ふりがなで検索"
+          className="w-full pl-9 pr-3 py-2 text-sm bg-transparent border-0 outline-none text-brand-plum placeholder:text-brand-plum/50"
+        />
+      </div>
+      {/* 一覧 */}
+      <div className="max-h-40 overflow-y-auto border-t border-brand-beige">
+        {filtered.map((c) => {
+          const isSelected = selectedIds.includes(c.id)
+          return (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => toggle(c.id)}
+              className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-brand-beige/50 transition-colors ${isSelected ? 'bg-brand-plum/5' : ''}`}
+            >
+              <span className={`w-4 h-4 flex items-center justify-center rounded border shrink-0 ${isSelected ? 'bg-brand-plum border-brand-plum' : 'border-brand-beige'}`}>
+                {isSelected && <Check className="h-3 w-3 text-white" />}
+              </span>
+              <span className="text-sm text-brand-plum">{c.name}</span>
+              <span className="text-xs text-brand-plum/50">({c.ruby})</span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 export function ReservationForm({ customers, casts }: ReservationFormProps) {
@@ -27,11 +108,9 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
   const [time, setTime] = useState('20:00')
   const [partySize, setPartySize] = useState(2)
   const [hasDesignation, setHasDesignation] = useState(false)
-  const [designatedCastId, setDesignatedCastId] = useState<string | null>(null)
-  const [castQuery, setCastQuery] = useState('')
+  const [designatedCastIds, setDesignatedCastIds] = useState<string[]>([])
   const [isAccompanied, setIsAccompanied] = useState(false)
-  const [accompaniedCastId, setAccompaniedCastId] = useState<string | null>(null)
-  const [accompaniedCastQuery, setAccompaniedCastQuery] = useState('')
+  const [accompaniedCastIds, setAccompaniedCastIds] = useState<string[]>([])
   const [customerType, setCustomerType] = useState<'existing' | 'new'>('new')
   const [guestName, setGuestName] = useState('')
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null)
@@ -50,21 +129,7 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
       )
     : customers
 
-  const filteredCasts = castQuery.trim()
-    ? casts.filter(
-        (c) => c.name.includes(castQuery) || c.ruby.includes(castQuery)
-      )
-    : casts
-
-  const filteredAccompaniedCasts = accompaniedCastQuery.trim()
-    ? casts.filter(
-        (c) => c.name.includes(accompaniedCastQuery) || c.ruby.includes(accompaniedCastQuery)
-      )
-    : casts
-
   const selectedCustomer = customers.find((c) => c.id === selectedCustomerId)
-  const selectedCast = casts.find((c) => c.id === designatedCastId)
-  const selectedAccompaniedCast = casts.find((c) => c.id === accompaniedCastId)
 
   const Toggle = ({
     value, onChange, label, activeLabel, activeColor = 'bg-brand-plum',
@@ -87,6 +152,14 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (hasDesignation && designatedCastIds.length === 0) {
+      setError('指名キャストを1名以上選択してください')
+      return
+    }
+    if (isAccompanied && accompaniedCastIds.length === 0) {
+      setError('同伴キャストを1名以上選択してください')
+      return
+    }
     setLoading(true)
     setError('')
     const result = await createReservationAction({
@@ -94,9 +167,9 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
       time,
       partySize,
       hasDesignation,
-      designatedCastId: hasDesignation ? designatedCastId : null,
+      designatedCastIds: hasDesignation ? designatedCastIds : [],
       isAccompanied,
-      accompaniedCastId: isAccompanied ? accompaniedCastId : null,
+      accompaniedCastIds: isAccompanied ? accompaniedCastIds : [],
       customerType,
       customerId: customerType === 'existing' ? selectedCustomerId : null,
       guestName: customerType === 'new' ? guestName : '',
@@ -189,52 +262,28 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
         </div>
       </div>
 
-      {/* 指名の有無 */}
+      {/* 指名 */}
       <div className="space-y-2">
         <div className="rounded-lg border border-brand-beige bg-white p-3">
-          <Toggle value={hasDesignation} onChange={(v) => { setHasDesignation(v); if (!v) setDesignatedCastId(null) }} label="指名なし" activeLabel="指名あり" />
+          <Toggle
+            value={hasDesignation}
+            onChange={(v) => { setHasDesignation(v); if (!v) setDesignatedCastIds([]) }}
+            label="指名なし"
+            activeLabel="指名あり"
+          />
         </div>
-
-        {/* キャスト選択（指名ありの時） */}
         {hasDesignation && (
-          <div className="rounded-lg border border-brand-beige bg-white overflow-hidden">
-            <p className="text-xs text-brand-plum/60 px-3 pt-2 pb-1 font-medium">指名キャストを選択</p>
-            {selectedCast ? (
-              <div className="flex items-center justify-between px-3 py-2 border-b border-brand-beige bg-brand-plum/5">
-                <span className="text-sm text-brand-plum font-medium">{selectedCast.name}</span>
-                <button type="button" onClick={() => setDesignatedCastId(null)} className="text-brand-plum/50 hover:text-brand-coral">
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            ) : null}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-plum/50" />
-              <input
-                type="text"
-                value={castQuery}
-                onChange={(e) => setCastQuery(e.target.value)}
-                placeholder="名前・ふりがなで検索"
-                className="w-full pl-9 pr-3 py-2 text-sm bg-transparent border-0 outline-none text-brand-plum placeholder:text-brand-plum/50"
-              />
-            </div>
-            <div className="max-h-40 overflow-y-auto border-t border-brand-beige">
-              {filteredCasts.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => { setDesignatedCastId(c.id); setCastQuery('') }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-brand-beige/50 transition-colors ${designatedCastId === c.id ? 'bg-brand-beige/50' : ''}`}
-                >
-                  <span className="text-sm text-brand-plum">{c.name}</span>
-                  <span className="text-xs text-brand-plum/50">({c.ruby})</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <CastMultiPicker
+            casts={casts}
+            selectedIds={designatedCastIds}
+            onChange={setDesignatedCastIds}
+            label="指名キャストを選択（複数可）"
+            required
+          />
         )}
       </div>
 
-      {/* 同伴・通常 ドロップダウン */}
+      {/* 同伴 */}
       <div className="space-y-2">
         <Label className="text-brand-plum">来店種別</Label>
         <select
@@ -242,52 +291,21 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
           onChange={(e) => {
             const v = e.target.value === 'accompanied'
             setIsAccompanied(v)
-            if (!v) { setAccompaniedCastId(null); setAccompaniedCastQuery('') }
+            if (!v) setAccompaniedCastIds([])
           }}
           className="w-full rounded-lg border border-brand-beige bg-white px-3 py-2.5 text-sm text-brand-plum outline-none focus:ring-2 focus:ring-brand-plum/30"
         >
           <option value="normal">通常来店</option>
           <option value="accompanied">同伴</option>
         </select>
-
-        {/* キャスト選択（同伴の時・必須） */}
         {isAccompanied && (
-          <div className="rounded-lg border border-brand-beige bg-white overflow-hidden">
-            <p className="text-xs text-brand-plum/60 px-3 pt-2 pb-1 font-medium">
-              同伴キャストを選択<span className="text-brand-coral ml-0.5">*</span>
-            </p>
-            {selectedAccompaniedCast ? (
-              <div className="flex items-center justify-between px-3 py-2 border-b border-brand-beige bg-brand-plum/5">
-                <span className="text-sm text-brand-plum font-medium">{selectedAccompaniedCast.name}</span>
-                <button type="button" onClick={() => setAccompaniedCastId(null)} className="text-brand-plum/50 hover:text-brand-coral">
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            ) : null}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-plum/50" />
-              <input
-                type="text"
-                value={accompaniedCastQuery}
-                onChange={(e) => setAccompaniedCastQuery(e.target.value)}
-                placeholder="名前・ふりがなで検索"
-                className="w-full pl-9 pr-3 py-2 text-sm bg-transparent border-0 outline-none text-brand-plum placeholder:text-brand-plum/50"
-              />
-            </div>
-            <div className="max-h-40 overflow-y-auto border-t border-brand-beige">
-              {filteredAccompaniedCasts.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => { setAccompaniedCastId(c.id); setAccompaniedCastQuery('') }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-brand-beige/50 transition-colors ${accompaniedCastId === c.id ? 'bg-brand-beige/50' : ''}`}
-                >
-                  <span className="text-sm text-brand-plum">{c.name}</span>
-                  <span className="text-xs text-brand-plum/50">({c.ruby})</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <CastMultiPicker
+            casts={casts}
+            selectedIds={accompaniedCastIds}
+            onChange={setAccompaniedCastIds}
+            label="同伴キャストを選択（複数可）"
+            required
+          />
         )}
       </div>
 

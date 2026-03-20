@@ -40,8 +40,10 @@ function ReservationCard({
   castMap: Map<string, Cast>
 }) {
   const customer = reservation.customerId ? customerMap.get(reservation.customerId) : null
-  const designatedCast = reservation.designatedCastId ? castMap.get(reservation.designatedCastId) : null
-  const accompaniedCast = reservation.accompaniedCastId ? castMap.get(reservation.accompaniedCastId) : null
+  const designatedCastNames = reservation.designatedCastIds
+    .map((id) => castMap.get(id)?.name).filter(Boolean).join('・')
+  const accompaniedCastNames = reservation.accompaniedCastIds
+    .map((id) => castMap.get(id)?.name).filter(Boolean).join('・')
   return (
     <div className="bg-white rounded-lg border border-brand-beige p-3 space-y-1.5">
       <div className="flex items-center justify-between gap-2">
@@ -53,12 +55,12 @@ function ReservationCard({
         <div className="flex gap-1">
           {reservation.hasDesignation && (
             <span className="text-[10px] bg-brand-plum/10 text-brand-plum px-1.5 py-0.5 rounded-full font-medium">
-              指名{designatedCast ? `：${designatedCast.name}` : ''}
+              指名{designatedCastNames ? `：${designatedCastNames}` : ''}
             </span>
           )}
           {reservation.isAccompanied && (
             <span className="text-[10px] bg-brand-gold/10 text-brand-gold px-1.5 py-0.5 rounded-full font-medium">
-              同伴{accompaniedCast ? `：${accompaniedCast.name}` : ''}
+              同伴{accompaniedCastNames ? `：${accompaniedCastNames}` : ''}
             </span>
           )}
           {reservation.priceType === 'party' && (

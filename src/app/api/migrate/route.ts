@@ -12,5 +12,7 @@ export async function GET() {
   await sql`ALTER TABLE customers ADD COLUMN IF NOT EXISTS receipt_names TEXT[] NOT NULL DEFAULT '{}'`
   await sql`ALTER TABLE visit_records ADD COLUMN IF NOT EXISTS bottle_snapshots JSONB NOT NULL DEFAULT '[]'`
   await sql`ALTER TABLE reservations ADD COLUMN IF NOT EXISTS accompanied_cast_id TEXT`
+  await sql`ALTER TABLE reservations ADD COLUMN IF NOT EXISTS designated_cast_ids TEXT[] NOT NULL DEFAULT '{}'`
+  await sql`ALTER TABLE reservations ADD COLUMN IF NOT EXISTS accompanied_cast_ids TEXT[] NOT NULL DEFAULT '{}'`
   return Response.json({ ok: true, message: 'Migration complete' })
 }
