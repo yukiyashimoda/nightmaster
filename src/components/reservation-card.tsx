@@ -197,12 +197,32 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
             <div className="flex gap-1">
               {r.hasDesignation && (
                 <span className="text-[10px] bg-brand-plum/10 text-brand-plum px-1.5 py-0.5 rounded-full font-medium">
-                  指名{designatedCastNames ? `：${designatedCastNames}` : ''}
+                  指名{r.designatedCastIds.length > 0 && '：'}
+                  {r.designatedCastIds.map((cid, i) => {
+                    const c = castMap.get(cid)
+                    if (!c) return null
+                    return (
+                      <span key={cid}>
+                        {i > 0 && '・'}
+                        <Link href={`/casts/${cid}`} onClick={(e) => e.stopPropagation()} className="hover:underline">{c.name}</Link>
+                      </span>
+                    )
+                  })}
                 </span>
               )}
               {r.isAccompanied && (
                 <span className="text-[10px] bg-brand-gold/10 text-brand-gold px-1.5 py-0.5 rounded-full font-medium">
-                  同伴{accompaniedCastNames ? `：${accompaniedCastNames}` : ''}
+                  同伴{r.accompaniedCastIds.length > 0 && '：'}
+                  {r.accompaniedCastIds.map((cid, i) => {
+                    const c = castMap.get(cid)
+                    if (!c) return null
+                    return (
+                      <span key={cid}>
+                        {i > 0 && '・'}
+                        <Link href={`/casts/${cid}`} onClick={(e) => e.stopPropagation()} className="hover:underline">{c.name}</Link>
+                      </span>
+                    )
+                  })}
                 </span>
               )}
               {r.priceType === 'party' && (
@@ -300,8 +320,42 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
                     )}
                     {r.customerType === 'new' && r.guestName && <span className="ml-1 text-brand-plum/70">{r.guestName}</span>}
                   </Row>
-                  {r.hasDesignation && <Row label="指名">{designatedCastNames || '—'}</Row>}
-                  {r.isAccompanied && <Row label="同伴">{accompaniedCastNames || '—'}</Row>}
+                  {r.hasDesignation && (
+                    <Row label="指名">
+                      {r.designatedCastIds.length > 0
+                        ? r.designatedCastIds.map((cid, i) => {
+                            const c = castMap.get(cid)
+                            if (!c) return null
+                            return (
+                              <span key={cid}>
+                                {i > 0 && '・'}
+                                <Link href={`/casts/${cid}`} onClick={closeModal} className="font-medium text-brand-plum hover:underline inline-flex items-center gap-0.5">
+                                  {c.name}<ExternalLink className="h-3 w-3 opacity-50" />
+                                </Link>
+                              </span>
+                            )
+                          })
+                        : '—'}
+                    </Row>
+                  )}
+                  {r.isAccompanied && (
+                    <Row label="同伴">
+                      {r.accompaniedCastIds.length > 0
+                        ? r.accompaniedCastIds.map((cid, i) => {
+                            const c = castMap.get(cid)
+                            if (!c) return null
+                            return (
+                              <span key={cid}>
+                                {i > 0 && '・'}
+                                <Link href={`/casts/${cid}`} onClick={closeModal} className="font-medium text-brand-plum hover:underline inline-flex items-center gap-0.5">
+                                  {c.name}<ExternalLink className="h-3 w-3 opacity-50" />
+                                </Link>
+                              </span>
+                            )
+                          })
+                        : '—'}
+                    </Row>
+                  )}
                   <Row label="料金">
                     {r.priceType === 'normal' ? '通常料金' : (
                       <span>パーティープラン{r.partyPlanPrice ? ` ¥${r.partyPlanPrice.toLocaleString()}` : ''}{r.partyPlanMinutes ? ` / ${r.partyPlanMinutes}分` : ''}</span>
