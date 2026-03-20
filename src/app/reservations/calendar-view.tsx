@@ -12,6 +12,7 @@ interface CalendarViewProps {
   customerMap: Map<string, Customer>
   casts: Cast[]
   castMap: Map<string, Cast>
+  bottlesByCustomer: Map<string, number>
   loggedIn: boolean
 }
 
@@ -39,7 +40,7 @@ function getWeekStart(d: Date): Date {
 const BUFFER_WEEKS = 26           // 前後26週 = 約1年
 const TOTAL_WEEKS = BUFFER_WEEKS * 2 + 1  // 53週
 
-export function CalendarView({ reservations, customers, customerMap, casts, castMap, loggedIn }: CalendarViewProps) {
+export function CalendarView({ reservations, customers, customerMap, casts, castMap, bottlesByCustomer, loggedIn }: CalendarViewProps) {
   const today = useMemo(() => {
     const d = new Date()
     d.setHours(0, 0, 0, 0)
@@ -337,7 +338,7 @@ export function CalendarView({ reservations, customers, customerMap, casts, cast
               <p className="text-sm text-brand-plum/30 py-2">予約なし</p>
             ) : (
               selectedReservations.map((r) => (
-                <ReservationCard key={r.id} reservation={r} customerMap={customerMap} customers={customers} castMap={castMap} casts={casts} loggedIn={loggedIn} />
+                <ReservationCard key={r.id} reservation={r} customerMap={customerMap} customers={customers} castMap={castMap} casts={casts} bottlesByCustomer={bottlesByCustomer} loggedIn={loggedIn} />
               ))
             )}
           </div>
@@ -421,7 +422,7 @@ export function CalendarView({ reservations, customers, customerMap, casts, cast
               <p className="text-sm text-brand-plum/30 py-2">予約なし</p>
             ) : (
               selectedReservations.map((r) => (
-                <ReservationCard key={r.id} reservation={r} customerMap={customerMap} customers={customers} castMap={castMap} casts={casts} loggedIn={loggedIn} />
+                <ReservationCard key={r.id} reservation={r} customerMap={customerMap} customers={customers} castMap={castMap} casts={casts} bottlesByCustomer={bottlesByCustomer} loggedIn={loggedIn} />
               ))
             )}
           </div>

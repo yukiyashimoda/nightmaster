@@ -16,6 +16,7 @@ interface ReservationCardProps {
   customers: Customer[]
   castMap: Map<string, Cast>
   casts: Cast[]
+  bottlesByCustomer: Map<string, number>
   loggedIn: boolean
 }
 
@@ -90,7 +91,7 @@ function CastPicker({
   )
 }
 
-export function ReservationCard({ reservation: r, customerMap, customers, castMap, casts, loggedIn }: ReservationCardProps) {
+export function ReservationCard({ reservation: r, customerMap, customers, castMap, casts, bottlesByCustomer, loggedIn }: ReservationCardProps) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [mode, setMode] = useState<ModalMode>('view')
@@ -199,6 +200,9 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
           </span>
           {customer && <span className="text-xs text-brand-plum font-medium">{customer.name}</span>}
           {r.customerType === 'new' && r.guestName && <span className="text-xs text-brand-plum/70">{r.guestName}</span>}
+          {customer && (bottlesByCustomer.get(customer.id) ?? 0) > 0 && (
+            <span className="text-[11px] text-brand-gold font-medium">🍾 {bottlesByCustomer.get(customer.id)}本</span>
+          )}
         </div>
         {r.memo && <p className="text-[11px] text-brand-plum/50 border-t border-brand-beige pt-1.5 line-clamp-1">{r.memo}</p>}
       </div>
