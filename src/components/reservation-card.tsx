@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Clock, X, Edit, Trash2, Check, Search, ChevronRight, Phone, Users } from 'lucide-react'
+import { Clock, X, Edit, Trash2, Check, Search, ChevronRight, Phone, ExternalLink } from 'lucide-react'
 import type { Cast, Customer, Reservation } from '@/types'
 import { updateReservationAction, deleteReservationAction } from '@/lib/reservation-actions'
 import { Button } from '@/components/ui/button'
@@ -213,7 +214,15 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
           <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${r.customerType === 'existing' ? 'bg-brand-beige text-brand-plum/70' : 'bg-gray-100 text-gray-500'}`}>
             {r.customerType === 'existing' ? '既存' : '初来店'}
           </span>
-          {customer && <span className="text-xs text-brand-plum font-medium">{customer.name}</span>}
+          {customer && (
+            <Link
+              href={`/customers/${customer.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="text-xs text-brand-plum font-medium hover:underline"
+            >
+              {customer.name}
+            </Link>
+          )}
           {r.customerType === 'new' && r.guestName && <span className="text-xs text-brand-plum/70">{r.guestName}</span>}
           {customer && (bottlesByCustomer.get(customer.id) ?? 0) > 0 && (
             <span className="text-[11px] text-brand-gold font-medium">🍾 {bottlesByCustomer.get(customer.id)}本</span>
@@ -282,7 +291,11 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
                     <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-medium ${r.customerType === 'existing' ? 'bg-brand-beige text-brand-plum/70' : 'bg-gray-100 text-gray-500'}`}>
                       {r.customerType === 'existing' ? '既存顧客' : '初来店'}
                     </span>
-                    {customer && <span className="ml-1 font-medium text-brand-plum">{customer.name}</span>}
+                    {customer && (
+                      <Link href={`/customers/${customer.id}`} className="ml-1 font-medium text-brand-plum hover:underline inline-flex items-center gap-0.5">
+                        {customer.name}<ExternalLink className="h-3 w-3 opacity-50" />
+                      </Link>
+                    )}
                     {r.customerType === 'new' && r.guestName && <span className="ml-1 text-brand-plum/70">{r.guestName}</span>}
                   </Row>
                   {r.hasDesignation && <Row label="指名">{designatedCastNames || '—'}</Row>}
