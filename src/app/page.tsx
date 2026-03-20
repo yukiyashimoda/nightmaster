@@ -1,92 +1,175 @@
-import { getCustomers, getBottlesByCustomer, getCasts } from '@/lib/kv'
-import { getHiraganaGroup, hiraganaGroups } from '@/lib/utils'
-import { CustomerCard } from '@/components/customer-card'
-import { HiraganaIndex } from '@/components/hiragana-index'
-import { Fab } from '@/components/fab'
-import { CustomerSearch } from './customer-search'
+import { getCustomers, getBottles, getVisitRecords, getCasts } from '@/lib/kv'
 import { isAuthenticated } from '@/lib/auth'
-import type { Bottle, Cast } from '@/types'
+import { formatDate } from '@/lib/utils'
+import Link from 'next/link'
+import { AlertTriangle, Calendar, Users, TrendingUp } from 'lucide-react'
+import { GiBrandyBottle } from 'react-icons/gi'
+import { GiAmpleDress } from 'react-icons/gi'
+import { FaAddressCard } from 'react-icons/fa'
 
 export const dynamic = 'force-dynamic'
 
-export default async function CustomerListPage() {
-  const [customers, casts, loggedIn] = await Promise.all([getCustomers(), getCasts(), isAuthenticated()])
-  const castMap = new Map<string, Cast>(casts.map((c) => [c.id, c]))
+export default async function DashboardPage() {
+  const [customers, bottles, visits, casts, loggedIn] = await Promise.all([
+    getCustomers(),
+    getBottles(),
+    getVisitRecords(),
+    getCasts(),
+    isAuthenticated(),
+  ])
 
-  // Fetch all bottles for all customers
-  const bottlesMap = new Map<string, Bottle[]>()
-  await Promise.all(
-    customers.map(async (c) => {
-      const bottles = await getBottlesByCustomer(c.id)
-      bottlesMap.set(c.id, bottles)
-    })
+  const now = new Date()
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+
+  const alertCustomers = customers.filter((c) => c.isAlert)
+  const activeCustomers = customers.filter(
+    (c) => c.lastVisitDate && new Date(c.lastVisitDate) >= thirtyDaysAgo
   )
+  const recentVisits = visits
+    .filter((v) => new Date(v.visitDate) >= sevenDaysAgo)
+    .slice(0, 5)
 
-  // Group by hiragana
-  const grouped = new Map<string, typeof customers>()
-  for (const group of hiraganaGroups) {
-    const inGroup = customers.filter(
-      (c) => getHiraganaGroup(c.ruby) === group
-    )
-    if (inGroup.length > 0) {
-      grouped.set(group, inGroup)
-    }
-  }
-
-  const activeGroups = Array.from(grouped.keys())
+  const castMap = new Map(casts.map((c) => [c.id, c]))
+  const customerMap = new Map(customers.map((c) => [c.id, c]))
 
   return (
-    <div className="relative min-h-screen bg-[#F5F1EE]">
-      {/* Header */}
-      <div className="sticky top-16 z-20 bg-[#F5F1EE]/95 backdrop-blur border-b border-brand-beige/50 px-4 py-3">
-        <h1 className="text-xl font-bold text-brand-plum mb-3">顧客一覧</h1>
-        <CustomerSearch
-          customers={customers}
-          bottlesMap={Object.fromEntries(bottlesMap)}
-          castMap={Object.fromEntries(castMap)}
-        />
+    <div className="min-h-screen bg-[#F5F1EE] px-4 py-6 pb-24 space-y-6">
+      <div>
+        <h1 className="text-xl font-bold text-brand-plum">ダッシュボード</h1>
+        <p className="text-sm text-brand-plum/50 mt-0.5">{formatDate(now.toISOString())}</p>
       </div>
 
-      {/* Hiragana Index Sidebar */}
-      {/* Customer List */}
-      <div className="pb-24">
-        {activeGroups.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-brand-plum/50">
-            <p className="text-lg">顧客が登録されていません</p>
-            <p className="text-sm mt-1">右下のボタンから追加してください</p>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-3">
+        <Link href="/customers" className="rounded-xl bg-white border border-brand-beige shadow-sm p-4 hover:border-brand-plum/30 transition-colors">
+          <div className="flex items-center gap-2 mb-2">
+            <FaAddressCard size={16} className="text-brand-plum/50" />
+            <p className="text-xs text-brand-plum/50">総顧客数</p>
           </div>
-        ) : (
-          activeGroups.map((group) => {
-            const groupCustomers = grouped.get(group)!
-            return (
-              <div key={group} id={`group-${group}`}>
-                {/* Group Header */}
-                <div className="sticky top-[calc(4rem+4.5rem)] z-10 bg-[#F5F1EE]/90 backdrop-blur px-4 py-1.5">
-                  <span className="text-xs font-semibold text-brand-plum/60 uppercase tracking-wider">
-                    {group}
-                  </span>
+          <p className="text-2xl font-bold text-brand-plum">{customers.length}<span className="text-sm font-normal ml-1">名</span></p>
+        </Link>
+
+        <Link href="/customers" className="rounded-xl bg-white border border-brand-beige shadow-sm p-4 hover:border-brand-plum/30 transition-colors">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp size={16} className="text-brand-plum/50" />
+            <p className="text-xs text-brand-plum/50">30日以内来店</p>
+          </div>
+          <p className="text-2xl font-bold text-brand-plum">{activeCustomers.length}<span className="text-sm font-normal ml-1">名</span></p>
+        </Link>
+
+        <Link href="/customers" className="rounded-xl bg-white border border-brand-beige shadow-sm p-4 hover:border-brand-plum/30 transition-colors">
+          <div className="flex items-center gap-2 mb-2">
+            <GiBrandyBottle size={16} className="text-brand-plum/50" />
+            <p className="text-xs text-brand-plum/50">ボトルキープ数</p>
+          </div>
+          <p className="text-2xl font-bold text-brand-plum">{bottles.length}<span className="text-sm font-normal ml-1">本</span></p>
+        </Link>
+
+        <Link href="/casts" className="rounded-xl bg-white border border-brand-beige shadow-sm p-4 hover:border-brand-plum/30 transition-colors">
+          <div className="flex items-center gap-2 mb-2">
+            <GiAmpleDress size={16} className="text-brand-plum/50" />
+            <p className="text-xs text-brand-plum/50">キャスト数</p>
+          </div>
+          <p className="text-2xl font-bold text-brand-plum">{casts.length}<span className="text-sm font-normal ml-1">名</span></p>
+        </Link>
+      </div>
+
+      {/* Alert Customers */}
+      {alertCustomers.length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold text-brand-plum/60 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-brand-coral" />
+            要確認顧客
+            <span className="text-brand-coral font-bold">{alertCustomers.length}</span>
+          </h2>
+          <div className="space-y-2">
+            {alertCustomers.map((c) => (
+              <Link
+                key={c.id}
+                href={`/customers/${c.id}`}
+                className="flex items-center gap-3 p-3 rounded-xl bg-white border border-brand-coral/30 shadow-sm hover:border-brand-coral/60 transition-colors"
+              >
+                <div className="w-9 h-9 rounded-full bg-brand-coral/20 flex items-center justify-center text-[10px] font-bold text-brand-coral shrink-0">
+                  {c.designatedCastIds[0] ? (castMap.get(c.designatedCastIds[0])?.ruby ?? 'FREE') : 'FREE'}
                 </div>
-                {/* Customers */}
-                {groupCustomers.map((customer) => (
-                  <CustomerCard
-                    key={customer.id}
-                    customer={customer}
-                    bottles={bottlesMap.get(customer.id) ?? []}
-                    designatedCastRuby={
-                      customer.designatedCastIds[0]
-                        ? castMap.get(customer.designatedCastIds[0])?.ruby
-                        : undefined
-                    }
-                  />
-                ))}
-              </div>
-            )
-          })
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-brand-plum truncate">{c.name}</p>
+                  {c.alertReason && (
+                    <p className="text-xs text-brand-coral/80 truncate">{c.alertReason}</p>
+                  )}
+                </div>
+                <AlertTriangle className="h-4 w-4 text-brand-coral shrink-0" />
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recent Visits */}
+      <div>
+        <h2 className="text-sm font-semibold text-brand-plum/60 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          直近7日の来店履歴
+        </h2>
+        {recentVisits.length === 0 ? (
+          <p className="text-sm text-brand-plum/50">直近7日の来店記録はありません</p>
+        ) : (
+          <div className="space-y-2">
+            {recentVisits.map((v) => {
+              const customer = customerMap.get(v.customerId)
+              const designatedNames = v.designatedCastIds
+                .map((id) => castMap.get(id)?.name)
+                .filter(Boolean)
+                .join('・')
+              return (
+                <Link
+                  key={v.id}
+                  href={`/customers/${v.customerId}`}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-white border border-brand-beige shadow-sm hover:border-brand-plum/30 transition-colors"
+                >
+                  <div className="w-9 h-9 rounded-full bg-brand-gold/20 flex items-center justify-center text-xs font-bold text-brand-plum shrink-0">
+                    {customer?.name.charAt(0) ?? '?'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-brand-plum truncate">{customer?.name ?? '不明'}</p>
+                    <p className="text-xs text-brand-plum/50">
+                      {formatDate(v.visitDate)}
+                      {designatedNames && ` ・ ${designatedNames}`}
+                    </p>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
         )}
       </div>
 
-      {/* FAB */}
-      {loggedIn && <Fab href="/customers/new" label="新規顧客" />}
+      {/* Quick Links */}
+      {loggedIn && (
+        <div>
+          <h2 className="text-sm font-semibold text-brand-plum/60 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            クイックアクセス
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            <Link
+              href="/customers/new"
+              className="flex items-center justify-center gap-2 p-4 rounded-xl bg-brand-plum text-white font-medium text-sm shadow-sm hover:bg-brand-plum/90 transition-colors"
+            >
+              <FaAddressCard size={16} />
+              新規顧客登録
+            </Link>
+            <Link
+              href="/customers"
+              className="flex items-center justify-center gap-2 p-4 rounded-xl bg-white border border-brand-beige text-brand-plum font-medium text-sm shadow-sm hover:border-brand-plum/30 transition-colors"
+            >
+              <FaAddressCard size={16} />
+              顧客一覧を見る
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

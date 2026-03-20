@@ -20,7 +20,7 @@ export function Nav({ isLoggedIn, sessionUser }: NavProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const links = [
-    { href: '/', label: '顧客', Icon: FaAddressCard },
+    { href: '/customers', label: '顧客', Icon: FaAddressCard },
     { href: '/casts', label: 'キャスト', Icon: GiAmpleDress },
     { href: '/favorites', label: 'お気に入り', Icon: FaStar },
   ]
@@ -35,7 +35,7 @@ export function Nav({ isLoggedIn, sessionUser }: NavProps) {
   const sidebarLinks = (
     <nav className="flex-1 p-3 space-y-1">
       {links.map(({ href, label, Icon }) => {
-        const active = pathname === href || (href !== '/' && pathname.startsWith(href))
+        const active = pathname === href || pathname.startsWith(href + '/')
         return (
           <Link
             key={href}
@@ -145,7 +145,7 @@ export function Nav({ isLoggedIn, sessionUser }: NavProps) {
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-brand-beige shadow-lg">
         <div className="flex">
           {links.map(({ href, label, Icon }) => {
-            const active = pathname === href || (href !== '/' && pathname.startsWith(href))
+            const active = pathname === href || pathname.startsWith(href + '/')
             return (
               <Link
                 key={href}
