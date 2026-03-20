@@ -405,8 +405,8 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      <Label>連絡先（電話番号）<Req /></Label>
-                      <Input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="090-1234-5678" required />
+                      <Label>連絡先（電話番号）</Label>
+                      <Input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="090-1234-5678" />
                     </div>
 
                     {/* 指名 */}

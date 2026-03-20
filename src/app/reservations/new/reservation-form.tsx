@@ -243,13 +243,12 @@ export function ReservationForm({ customers, casts, bottlesByCustomer }: Reserva
 
       {/* 連絡先（電話番号） */}
       <div className="space-y-1.5">
-        <Label className="text-brand-plum">連絡先（電話番号）<span className="text-brand-coral ml-0.5">*</span></Label>
+        <Label className="text-brand-plum">連絡先（電話番号）</Label>
         <Input
           type="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="例：090-1234-5678"
-          required
         />
       </div>
 
