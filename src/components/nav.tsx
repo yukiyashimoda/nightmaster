@@ -27,6 +27,8 @@ export function Nav({ isLoggedIn, sessionUser }: NavProps) {
     { href: '/reservations', label: '予約', Icon: CalendarDays },
   ]
 
+  const bottomLinks = links.filter((l) => l.href !== '/favorites')
+
   const handleLogout = async () => {
     await logoutAction()
     setSidebarOpen(false)
@@ -146,7 +148,7 @@ export function Nav({ isLoggedIn, sessionUser }: NavProps) {
       {/* ─── スマホ：下部固定ナビ ─── */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-brand-beige shadow-lg">
         <div className="flex">
-          {links.map(({ href, label, Icon }) => {
+          {bottomLinks.map(({ href, label, Icon }) => {
             const active = href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/')
             return (
               <Link
