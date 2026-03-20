@@ -76,6 +76,9 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
+      {/* Cast Ranking */}
+      <CastRanking casts={casts} visits={visits} />
+
       {/* Alert Customers */}
       {alertCustomers.length > 0 && (
         <div>
@@ -145,9 +148,6 @@ export default async function DashboardPage() {
           </div>
         )}
       </div>
-
-      {/* Cast Ranking */}
-      <CastRanking casts={casts} visits={visits} />
 
       {/* Quick Links */}
       {loggedIn && (
