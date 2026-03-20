@@ -6,8 +6,12 @@ import { NewCustomerForm } from './new-customer-form'
 
 export const dynamic = 'force-dynamic'
 
-export default async function NewCustomerPage() {
-  const [casts, customers] = await Promise.all([getCasts(), getCustomers()])
+export default async function NewCustomerPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ name?: string; date?: string }>
+}) {
+  const [casts, customers, params] = await Promise.all([getCasts(), getCustomers(), searchParams])
 
   return (
     <div className="min-h-screen pb-10">
@@ -22,7 +26,12 @@ export default async function NewCustomerPage() {
       </div>
 
       <div className="px-4 py-5">
-        <NewCustomerForm casts={casts} customers={customers} />
+        <NewCustomerForm
+          casts={casts}
+          customers={customers}
+          initialName={params.name ?? ''}
+          initialFirstVisitDate={params.date ?? ''}
+        />
       </div>
     </div>
   )

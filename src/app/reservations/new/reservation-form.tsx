@@ -19,6 +19,8 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showRegisterPrompt, setShowRegisterPrompt] = useState(false)
+  const [savedDate, setSavedDate] = useState('')
 
   const today = new Date().toISOString().split('T')[0]
   const [date, setDate] = useState(today)
@@ -95,13 +97,50 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
     })
     setLoading(false)
     if (result.success) {
-      router.push('/reservations')
+      if (customerType === 'new') {
+        setSavedDate(date)
+        setShowRegisterPrompt(true)
+      } else {
+        router.push('/reservations')
+      }
     } else {
       setError(result.error ?? '登録に失敗しました')
     }
   }
 
   return (
+    <>
+    {showRegisterPrompt && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+        <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-xl space-y-4">
+          <h2 className="text-base font-bold text-brand-plum">顧客リストに登録しますか？</h2>
+          <p className="text-sm text-brand-plum/70">
+            {guestName ? `「${guestName}」を` : '初来店のお客様を'}顧客リストに追加できます。予約名などのデータを引き継いで登録画面に進みます。
+          </p>
+          <div className="flex gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => router.push('/reservations')}
+              className="flex-1 py-2.5 rounded-lg border border-brand-beige text-sm font-medium text-brand-plum/70 hover:bg-brand-beige/50 transition-colors"
+            >
+              スキップ
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const params = new URLSearchParams()
+                if (guestName) params.set('name', guestName)
+                if (savedDate) params.set('date', savedDate)
+                router.push(`/customers/new?${params.toString()}`)
+              }}
+              className="flex-1 py-2.5 rounded-lg bg-brand-plum text-white text-sm font-bold hover:bg-brand-plum/90 transition-colors"
+            >
+              顧客登録へ
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     <form onSubmit={handleSubmit} className="space-y-5 pb-24">
       {error && (
         <div className="p-3 rounded-lg bg-brand-coral/10 border border-brand-coral/40 text-brand-coral text-sm">
@@ -336,5 +375,6 @@ export function ReservationForm({ customers, casts }: ReservationFormProps) {
         </Button>
       </div>
     </form>
+    </>
   )
 }

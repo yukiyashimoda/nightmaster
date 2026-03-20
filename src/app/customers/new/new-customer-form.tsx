@@ -14,6 +14,8 @@ import type { Cast, Customer } from '@/types'
 interface NewCustomerFormProps {
   casts: Cast[]
   customers: Customer[]
+  initialName?: string
+  initialFirstVisitDate?: string
 }
 
 interface BottleInput {
@@ -113,10 +115,11 @@ function CastMultiSelect({
   )
 }
 
-export function NewCustomerForm({ casts, customers }: NewCustomerFormProps) {
+export function NewCustomerForm({ casts, customers, initialName = '', initialFirstVisitDate = '' }: NewCustomerFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [name, setName] = useState(initialName)
   const [isAlert, setIsAlert] = useState(false)
   const [alertReason, setAlertReason] = useState('')
   const [hasGlass, setHasGlass] = useState(false)
@@ -127,7 +130,7 @@ export function NewCustomerForm({ casts, customers }: NewCustomerFormProps) {
   const [linkedIds, setLinkedIds] = useState<string[]>([])
   const [linkedQuery, setLinkedQuery] = useState('')
   const [bottles, setBottles] = useState<BottleInput[]>([])
-  const [firstVisitDate, setFirstVisitDate] = useState('')
+  const [firstVisitDate, setFirstVisitDate] = useState(initialFirstVisitDate)
 
   const filteredCustomers = linkedQuery.trim()
     ? customers.filter((c) => c.name.includes(linkedQuery) || c.ruby.includes(linkedQuery) || c.nickname.includes(linkedQuery))
@@ -162,7 +165,7 @@ export function NewCustomerForm({ casts, customers }: NewCustomerFormProps) {
 
     const result = await createCustomerAction(
       {
-        name: data.get('name') as string,
+        name,
         ruby: data.get('ruby') as string,
         nickname: data.get('nickname') as string,
         phone: data.get('phone') as string,
@@ -206,7 +209,7 @@ export function NewCustomerForm({ casts, customers }: NewCustomerFormProps) {
 
       <div className="space-y-1.5">
         <Label className="text-brand-plum">氏名（漢字）<span className="text-brand-coral ml-0.5">*</span></Label>
-        <Input name="name" required placeholder="田中 一郎" />
+        <Input name="name" required placeholder="田中 一郎" value={name} onChange={(e) => setName(e.target.value)} />
       </div>
 
       <div className="space-y-1.5">
