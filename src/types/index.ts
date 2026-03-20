@@ -53,6 +53,7 @@ export interface Reservation {
   partyPlanMinutes: number | null   // パーティープランセット時間（分）
   phone: string
   memo: string
+  isVisited: boolean
   updatedAt: string
   updatedBy: string
 }

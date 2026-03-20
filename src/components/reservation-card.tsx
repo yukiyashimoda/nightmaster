@@ -116,6 +116,8 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
   const [editPartyPlanMinutes, setEditPartyPlanMinutes] = useState(r.partyPlanMinutes?.toString() ?? '90')
   const [editMemo, setEditMemo] = useState(r.memo)
   const [customerQuery, setCustomerQuery] = useState('')
+  const [isVisited, setIsVisited] = useState(r.isVisited)
+  const [visitedLoading, setVisitedLoading] = useState(false)
 
   const customer = r.customerId ? customerMap.get(r.customerId) : null
   const designatedCastNames = r.designatedCastIds.map((id) => castMap.get(id)?.name).filter(Boolean).join('・')
@@ -162,12 +164,25 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
     else { setError(result.error ?? '削除に失敗しました'); setPassword('') }
   }
 
+  async function toggleVisited() {
+    setVisitedLoading(true)
+    const next = !isVisited
+    await updateReservationAction(r.id, { isVisited: next })
+    setIsVisited(next)
+    setVisitedLoading(false)
+    router.refresh()
+  }
+
   return (
     <>
       {/* カードトリガー */}
       <div
         onClick={openModal}
-        className="bg-white rounded-lg border border-brand-beige p-3 space-y-1.5 cursor-pointer hover:bg-brand-beige/20 transition-colors"
+        className={`rounded-lg border p-3 space-y-1.5 cursor-pointer transition-colors ${
+          isVisited
+            ? 'bg-gray-50 border-gray-200 opacity-60 hover:opacity-80'
+            : 'bg-white border-brand-beige hover:bg-brand-beige/20'
+        }`}
       >
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -279,6 +294,21 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
                   </Row>
                   {r.memo && <Row label="メモ"><span className="whitespace-pre-wrap">{r.memo}</span></Row>}
                   {!loggedIn && <p className="text-xs text-brand-plum/50 pt-2 text-center">編集・削除にはログインが必要です</p>}
+
+                  {/* 来店済スイッチ */}
+                  <div className={`flex items-center justify-between mt-4 pt-4 border-t ${isVisited ? 'border-green-200' : 'border-brand-beige'}`}>
+                    <span className={`text-sm font-medium ${isVisited ? 'text-green-600' : 'text-brand-plum/60'}`}>
+                      {isVisited ? '来店済み' : '来店前'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={toggleVisited}
+                      disabled={visitedLoading}
+                      className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${isVisited ? 'bg-green-500' : 'bg-gray-200'} disabled:opacity-50`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${isVisited ? 'translate-x-6' : 'translate-x-0'}`} />
+                    </button>
+                  </div>
                 </div>
               )}
 

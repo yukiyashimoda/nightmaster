@@ -176,6 +176,7 @@ export function ReservationForm({ customers, casts, bottlesByCustomer }: Reserva
       customerId: customerType === 'existing' ? selectedCustomerId : null,
       guestName: customerType === 'new' ? guestName : '',
       phone,
+      isVisited: false,
       priceType,
       partyPlanPrice: priceType === 'party' && partyPlanPrice ? Number(partyPlanPrice) : null,
       partyPlanMinutes: priceType === 'party' && partyPlanMinutes ? Number(partyPlanMinutes) : null,
