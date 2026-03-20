@@ -292,56 +292,73 @@ export function CalendarView({ reservations, customerMap }: CalendarViewProps) {
 
       {/* ── Week view ── */}
       {viewMode === 'week' && (
-        <div className="space-y-4">
-          {weekDays.map((day) => {
-            const dateStr = formatDate(day)
-            const dayReservations = reservationsByDate.get(dateStr) ?? []
-            const isToday = dateStr === todayStr
-            const dow = day.getDay()
-            return (
-              <div key={dateStr}>
-                <div className="flex items-center gap-2 mb-2 px-1">
-                  <span
-                    className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold shrink-0 ${
-                      isToday
-                        ? 'bg-brand-plum text-white'
-                        : dow === 0
-                        ? 'text-red-400'
-                        : dow === 6
-                        ? 'text-blue-400'
-                        : 'text-brand-plum'
+        <>
+          {/* Horizontal day strip */}
+          <div className="bg-white rounded-xl border border-brand-beige overflow-hidden mb-4">
+            <div className="grid grid-cols-7">
+              {weekDays.map((day) => {
+                const dateStr = formatDate(day)
+                const count = reservationsByDate.get(dateStr)?.length ?? 0
+                const isToday = dateStr === todayStr
+                const isSelected = dateStr === selectedDate
+                const dow = day.getDay()
+                return (
+                  <button
+                    key={dateStr}
+                    onClick={() => setSelectedDate(dateStr)}
+                    className={`flex flex-col items-center gap-1 py-3 px-1 transition-colors ${
+                      isSelected ? 'bg-brand-plum/10' : 'hover:bg-brand-beige/30'
                     }`}
                   >
-                    {day.getDate()}
-                  </span>
-                  <span
-                    className={`text-xs font-semibold ${
-                      dow === 0 ? 'text-red-400' : dow === 6 ? 'text-blue-400' : 'text-brand-plum/60'
-                    }`}
-                  >
-                    {DAY_LABELS[dow]}
-                  </span>
-                  {dayReservations.length > 0 && (
-                    <span className="text-xs font-semibold text-brand-coral">
-                      {dayReservations.length}件
+                    <span
+                      className={`text-[11px] font-semibold ${
+                        dow === 0 ? 'text-red-400' : dow === 6 ? 'text-blue-400' : 'text-brand-plum/50'
+                      }`}
+                    >
+                      {DAY_LABELS[dow]}
                     </span>
-                  )}
-                </div>
-                {dayReservations.length === 0 ? (
-                  <div className="ml-9 py-1.5 text-xs text-brand-plum/30 border-l-2 border-brand-beige pl-3">
-                    予約なし
-                  </div>
-                ) : (
-                  <div className="ml-9 space-y-2">
-                    {dayReservations.map((r) => (
-                      <ReservationCard key={r.id} reservation={r} customerMap={customerMap} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
+                    <span
+                      className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold ${
+                        isToday
+                          ? 'bg-brand-plum text-white'
+                          : isSelected
+                          ? 'bg-brand-plum/20 text-brand-plum'
+                          : dow === 0
+                          ? 'text-red-400'
+                          : dow === 6
+                          ? 'text-blue-400'
+                          : 'text-brand-plum'
+                      }`}
+                    >
+                      {day.getDate()}
+                    </span>
+                    {count > 0 ? (
+                      <span className="text-[10px] font-bold text-brand-coral bg-brand-coral/10 rounded-full px-1.5 leading-4">
+                        {count}
+                      </span>
+                    ) : (
+                      <span className="h-4" />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Selected day reservations */}
+          <div className="space-y-2">
+            <h2 className="text-sm font-semibold text-brand-plum/60">
+              {selectedDate.replace(/-/g, '/')}
+            </h2>
+            {selectedReservations.length === 0 ? (
+              <p className="text-sm text-brand-plum/30 py-2">予約なし</p>
+            ) : (
+              selectedReservations.map((r) => (
+                <ReservationCard key={r.id} reservation={r} customerMap={customerMap} />
+              ))
+            )}
+          </div>
+        </>
       )}
 
       {/* FAB */}
