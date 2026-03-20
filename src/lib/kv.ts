@@ -510,6 +510,17 @@ export async function updateReservation(id: string, data: Partial<Omit<Reservati
   return rows[0] ? toReservation(rows[0]) : null
 }
 
+export async function getReservationsByCustomer(customerId: string): Promise<Reservation[]> {
+  if (!useDB) {
+    return Array.from(store.reservations.values())
+      .filter((r) => r.customerId === customerId)
+      .sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`))
+  }
+  const sql = getSQL()
+  const rows = await sql`SELECT * FROM reservations WHERE customer_id = ${customerId} ORDER BY date, time`
+  return rows.map(toReservation)
+}
+
 export async function deleteReservation(id: string): Promise<boolean> {
   if (!useDB) return store.reservations.delete(id)
   const sql = getSQL()

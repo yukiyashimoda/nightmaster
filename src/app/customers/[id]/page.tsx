@@ -4,8 +4,10 @@ import {
   getCustomer,
   getBottlesByCustomer,
   getVisitRecordsByCustomer,
+  getReservationsByCustomer,
   getCasts,
   getCustomers,
+  getBottles,
 } from '@/lib/kv'
 import { formatDate, formatCurrency, formatEditedBy } from '@/lib/utils'
 import { isAuthenticated } from '@/lib/auth'
@@ -13,6 +15,7 @@ import { DeleteConfirmButton } from '@/components/delete-confirm-button'
 import { deleteCustomerAction } from './delete-actions'
 import { BottleCard } from '@/components/bottle-card'
 import { VisitCard } from '@/components/visit-card'
+import { ReservationCard } from '@/components/reservation-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -21,6 +24,7 @@ import {
   ArrowLeft,
   Edit,
   Calendar,
+  CalendarDays,
   Plus,
   Phone,
   Mail,
@@ -36,12 +40,14 @@ export default async function CustomerDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [customer, bottles, visits, casts, allCustomers, loggedIn] = await Promise.all([
+  const [customer, bottles, visits, reservations, casts, allCustomers, allBottles, loggedIn] = await Promise.all([
     getCustomer(id),
     getBottlesByCustomer(id),
     getVisitRecordsByCustomer(id),
+    getReservationsByCustomer(id),
     getCasts(),
     getCustomers(),
+    getBottles(),
     isAuthenticated(),
   ])
 
@@ -49,6 +55,10 @@ export default async function CustomerDetailPage({
 
   const castMap = new Map(casts.map((c) => [c.id, c]))
   const customerMap = new Map(allCustomers.map((c) => [c.id, c]))
+  const bottlesByCustomer = new Map<string, number>()
+  for (const b of allBottles) {
+    bottlesByCustomer.set(b.customerId, (bottlesByCustomer.get(b.customerId) ?? 0) + 1)
+  }
   const designatedCasts = customer.designatedCastIds
     .map((id) => castMap.get(id))
     .filter(Boolean)
@@ -310,6 +320,32 @@ export default async function CustomerDetailPage({
             </div>
           </div>
         )}
+
+        {/* Reservations */}
+        <div>
+          <h3 className="text-sm font-semibold text-brand-plum/60 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <CalendarDays className="h-4 w-4" />
+            予約 ({reservations.length})
+          </h3>
+          {reservations.length === 0 ? (
+            <p className="text-brand-plum/50 text-sm">予約はありません</p>
+          ) : (
+            <div className="space-y-2">
+              {reservations.map((res) => (
+                <ReservationCard
+                  key={res.id}
+                  reservation={res}
+                  customerMap={customerMap}
+                  customers={allCustomers}
+                  castMap={castMap}
+                  casts={casts}
+                  bottlesByCustomer={bottlesByCustomer}
+                  loggedIn={loggedIn}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Visit History */}
         <div>
