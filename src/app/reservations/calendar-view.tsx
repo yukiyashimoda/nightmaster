@@ -324,8 +324,8 @@ export function CalendarView({ reservations, customerMap }: CalendarViewProps) {
       {viewMode === 'week' && (
         <>
           {/* Horizontal day strip */}
-          <div className="bg-white rounded-xl border border-brand-beige overflow-hidden mb-4">
-            <div className="grid grid-cols-7">
+          <div className="bg-white rounded-xl border border-brand-beige mb-4 overflow-x-auto">
+            <div className="flex min-w-max sm:min-w-0 sm:grid sm:grid-cols-7">
               {weekDays.map((day) => {
                 const dateStr = formatDate(day)
                 const count = reservationsByDate.get(dateStr)?.length ?? 0
@@ -336,7 +336,7 @@ export function CalendarView({ reservations, customerMap }: CalendarViewProps) {
                   <button
                     key={dateStr}
                     onClick={() => setSelectedDate(dateStr)}
-                    className={`flex flex-col items-center gap-1 py-3 px-1 transition-colors ${
+                    className={`flex flex-col items-center justify-center gap-0.5 py-2 px-4 sm:px-1 min-w-[52px] sm:min-w-0 transition-colors ${
                       isSelected ? 'bg-brand-plum/10' : 'hover:bg-brand-beige/30'
                     }`}
                   >
@@ -348,7 +348,7 @@ export function CalendarView({ reservations, customerMap }: CalendarViewProps) {
                       {DAY_LABELS[dow]}
                     </span>
                     <span
-                      className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold ${
+                      className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${
                         isToday
                           ? 'bg-brand-plum text-white'
                           : isSelected
