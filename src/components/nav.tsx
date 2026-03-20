@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LogIn, LogOut, Menu, X, User } from 'lucide-react'
+import { LogIn, LogOut, Menu, X, User, TrendingUp } from 'lucide-react'
 import { FaAddressCard, FaStar } from 'react-icons/fa'
 import { GiAmpleDress } from 'react-icons/gi'
 import { cn } from '@/lib/utils'
@@ -20,6 +20,7 @@ export function Nav({ isLoggedIn, sessionUser }: NavProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const links = [
+    { href: '/', label: 'ダッシュボード', Icon: TrendingUp },
     { href: '/customers', label: '顧客', Icon: FaAddressCard },
     { href: '/casts', label: 'キャスト', Icon: GiAmpleDress },
     { href: '/favorites', label: 'お気に入り', Icon: FaStar },
@@ -35,7 +36,7 @@ export function Nav({ isLoggedIn, sessionUser }: NavProps) {
   const sidebarLinks = (
     <nav className="flex-1 p-3 space-y-1">
       {links.map(({ href, label, Icon }) => {
-        const active = pathname === href || pathname.startsWith(href + '/')
+        const active = href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/')
         return (
           <Link
             key={href}
@@ -145,7 +146,7 @@ export function Nav({ isLoggedIn, sessionUser }: NavProps) {
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-brand-beige shadow-lg">
         <div className="flex">
           {links.map(({ href, label, Icon }) => {
-            const active = pathname === href || pathname.startsWith(href + '/')
+            const active = href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/')
             return (
               <Link
                 key={href}
