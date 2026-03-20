@@ -111,7 +111,7 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
   const [editIsAccompanied, setEditIsAccompanied] = useState(r.isAccompanied)
   const [editAccompaniedCastIds, setEditAccompaniedCastIds] = useState<string[]>(r.accompaniedCastIds)
   const [editCustomerType, setEditCustomerType] = useState<'existing' | 'new'>(r.customerType)
-  const [editCustomerId, setEditCustomerId] = useState<string | null>(r.customerId)
+  const [editCustomerIds, setEditCustomerIds] = useState<string[]>(r.customerIds)
   const [editGuestName, setEditGuestName] = useState(r.guestName)
   const [editPriceType, setEditPriceType] = useState<'normal' | 'party'>(r.priceType)
   const [editPartyPlanPrice, setEditPartyPlanPrice] = useState(r.partyPlanPrice?.toString() ?? '')
@@ -121,14 +121,18 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
   const [isVisited, setIsVisited] = useState(r.isVisited)
   const [visitedLoading, setVisitedLoading] = useState(false)
 
-  const customer = r.customerId ? customerMap.get(r.customerId) : null
+  const reservationCustomers = r.customerIds.map((id) => customerMap.get(id)).filter(Boolean) as Customer[]
   const designatedCastNames = r.designatedCastIds.map((id) => castMap.get(id)?.name).filter(Boolean).join('・')
   const accompaniedCastNames = r.accompaniedCastIds.map((id) => castMap.get(id)?.name).filter(Boolean).join('・')
 
   const filteredCustomers = customerQuery.trim()
     ? customers.filter((c) => c.name.includes(customerQuery) || c.ruby.includes(customerQuery) || c.nickname.includes(customerQuery))
     : customers
-  const editCustomer = customers.find((c) => c.id === editCustomerId)
+  const editSelectedCustomers = customers.filter((c) => editCustomerIds.includes(c.id))
+
+  function toggleEditCustomer(id: string) {
+    setEditCustomerIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])
+  }
 
   function openModal() { setMode('view'); setError(''); setIsOpen(true) }
   function closeModal() { setIsOpen(false); setError(''); setPassword('') }
@@ -146,7 +150,7 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
       isAccompanied: editIsAccompanied,
       accompaniedCastIds: editIsAccompanied ? editAccompaniedCastIds : [],
       customerType: editCustomerType,
-      customerId: editCustomerType === 'existing' ? editCustomerId : null,
+      customerIds: editCustomerType === 'existing' ? editCustomerIds : [],
       guestName: editCustomerType === 'new' ? editGuestName : '',
       priceType: editPriceType,
       partyPlanPrice: editPriceType === 'party' && editPartyPlanPrice ? Number(editPartyPlanPrice) : null,
@@ -236,19 +240,20 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
           <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${r.customerType === 'existing' ? 'bg-brand-beige text-brand-plum/70' : 'bg-gray-100 text-gray-500'}`}>
             {r.customerType === 'existing' ? '既存' : '初来店'}
           </span>
-          {customer && (
+          {reservationCustomers.map((c) => (
             <Link
-              href={`/customers/${customer.id}`}
+              key={c.id}
+              href={`/customers/${c.id}`}
               onClick={(e) => e.stopPropagation()}
               className="text-xs text-brand-plum font-medium hover:underline"
             >
-              {customer.name}
+              {c.name}
             </Link>
-          )}
+          ))}
           {r.customerType === 'new' && r.guestName && <span className="text-xs text-brand-plum/70">{r.guestName}</span>}
-          {customer && (bottlesByCustomer.get(customer.id) ?? 0) > 0 && (
-            <span className="text-[11px] text-brand-gold font-medium">🍾 {bottlesByCustomer.get(customer.id)}本</span>
-          )}
+          {reservationCustomers.map((c) => (bottlesByCustomer.get(c.id) ?? 0) > 0 && (
+            <span key={`bottle-${c.id}`} className="text-[11px] text-brand-gold font-medium">🍾 {bottlesByCustomer.get(c.id)}本</span>
+          ))}
         </div>
         {r.memo && <p className="text-[11px] text-brand-plum/50 border-t border-brand-beige pt-1.5 line-clamp-1">{r.memo}</p>}
       </div>
@@ -313,11 +318,14 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
                     <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-medium ${r.customerType === 'existing' ? 'bg-brand-beige text-brand-plum/70' : 'bg-gray-100 text-gray-500'}`}>
                       {r.customerType === 'existing' ? '既存顧客' : '初来店'}
                     </span>
-                    {customer && (
-                      <Link href={`/customers/${customer.id}`} className="ml-1 font-medium text-brand-plum hover:underline inline-flex items-center gap-0.5">
-                        {customer.name}<ExternalLink className="h-3 w-3 opacity-50" />
-                      </Link>
-                    )}
+                    {reservationCustomers.map((c, i) => (
+                      <span key={c.id}>
+                        {i > 0 && '・'}
+                        <Link href={`/customers/${c.id}`} onClick={closeModal} className="ml-1 font-medium text-brand-plum hover:underline inline-flex items-center gap-0.5">
+                          {c.name}<ExternalLink className="h-3 w-3 opacity-50" />
+                        </Link>
+                      </span>
+                    ))}
                     {r.customerType === 'new' && r.guestName && <span className="ml-1 text-brand-plum/70">{r.guestName}</span>}
                   </Row>
                   {r.hasDesignation && (
@@ -447,10 +455,14 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
                       )}
                       {editCustomerType === 'existing' && (
                         <div className="rounded-lg border border-brand-beige bg-white overflow-hidden mt-2">
-                          {editCustomer && (
-                            <div className="flex items-center justify-between px-3 py-2 border-b border-brand-beige bg-brand-plum/5">
-                              <span className="text-sm text-brand-plum font-medium">{editCustomer.name}</span>
-                              <button type="button" onClick={() => setEditCustomerId(null)} className="text-brand-plum/50 hover:text-brand-coral"><X className="h-4 w-4" /></button>
+                          {editSelectedCustomers.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 px-3 py-2 border-b border-brand-beige bg-brand-plum/5">
+                              {editSelectedCustomers.map((c) => (
+                                <span key={c.id} className="flex items-center gap-1 text-xs bg-brand-plum/10 text-brand-plum px-2 py-0.5 rounded-full font-medium">
+                                  {c.name}
+                                  <button type="button" onClick={() => toggleEditCustomer(c.id)} className="hover:text-brand-coral"><X className="h-3 w-3" /></button>
+                                </span>
+                              ))}
                             </div>
                           )}
                           <div className="relative">
@@ -458,13 +470,19 @@ export function ReservationCard({ reservation: r, customerMap, customers, castMa
                             <input type="text" value={customerQuery} onChange={(e) => setCustomerQuery(e.target.value)} placeholder="名前・ふりがなで検索" className="w-full pl-9 pr-3 py-2 text-sm bg-transparent outline-none text-brand-plum placeholder:text-brand-plum/50" />
                           </div>
                           <div className="max-h-40 overflow-y-auto border-t border-brand-beige">
-                            {filteredCustomers.map((c) => (
-                              <button key={c.id} type="button" onClick={() => { setEditCustomerId(c.id); setCustomerQuery('') }}
-                                className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-brand-beige/50 ${editCustomerId === c.id ? 'bg-brand-beige/50' : ''}`}>
-                                <span className="text-sm text-brand-plum">{c.name}</span>
-                                <span className="text-xs text-brand-plum/50">({c.ruby})</span>
-                              </button>
-                            ))}
+                            {filteredCustomers.map((c) => {
+                              const isSel = editCustomerIds.includes(c.id)
+                              return (
+                                <button key={c.id} type="button" onClick={() => toggleEditCustomer(c.id)}
+                                  className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-brand-beige/50 ${isSel ? 'bg-brand-plum/5' : ''}`}>
+                                  <span className={`w-4 h-4 flex items-center justify-center rounded border shrink-0 ${isSel ? 'bg-brand-plum border-brand-plum' : 'border-brand-beige'}`}>
+                                    {isSel && <Check className="h-3 w-3 text-white" />}
+                                  </span>
+                                  <span className="text-sm text-brand-plum">{c.name}</span>
+                                  <span className="text-xs text-brand-plum/50">({c.ruby})</span>
+                                </button>
+                              )
+                            })}
                           </div>
                         </div>
                       )}

@@ -15,11 +15,11 @@ export async function POST(req: Request) {
     await sql`
       INSERT INTO reservations (
         id, date, time, party_size, has_designation, designated_cast_ids,
-        is_accompanied, accompanied_cast_ids, customer_type, customer_id, guest_name,
+        is_accompanied, accompanied_cast_ids, customer_type, customer_ids, guest_name,
         price_type, party_plan_price, party_plan_minutes, memo, updated_at, updated_by
       ) VALUES (
         ${r.id}, ${r.date}, ${r.time}, ${r.partySize}, ${r.hasDesignation}, ${r.designatedCastIds},
-        ${r.isAccompanied}, ${r.accompaniedCastIds}, ${r.customerType}, ${r.customerId}, ${r.guestName},
+        ${r.isAccompanied}, ${r.accompaniedCastIds}, ${r.customerType}, ${r.customerIds}, ${r.guestName},
         ${r.priceType}, ${r.partyPlanPrice}, ${r.partyPlanMinutes}, ${r.memo}, ${r.updatedAt}, ${r.updatedBy}
       )
       ON CONFLICT (id) DO NOTHING

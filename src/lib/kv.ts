@@ -436,7 +436,9 @@ function toReservation(r: any): Reservation {
       ? r.accompanied_cast_ids
       : (r.accompanied_cast_id ? [r.accompanied_cast_id] : []),
     customerType: r.customer_type,
-    customerId: r.customer_id ?? null,
+    customerIds: Array.isArray(r.customer_ids) && r.customer_ids.length > 0
+      ? r.customer_ids
+      : (r.customer_id ? [r.customer_id] : []),
     guestName: r.guest_name ?? '',
     priceType: r.price_type,
     partyPlanPrice: r.party_plan_price ?? null,
@@ -477,8 +479,8 @@ export async function createReservation(data: Omit<Reservation, 'id' | 'updatedA
   }
   const sql = getSQL()
   const rows = await sql`
-    INSERT INTO reservations (id, date, time, party_size, has_designation, designated_cast_ids, is_accompanied, accompanied_cast_ids, customer_type, customer_id, guest_name, phone, price_type, party_plan_price, party_plan_minutes, memo, is_visited, updated_at, updated_by)
-    VALUES (${id}, ${data.date}, ${data.time}, ${data.partySize}, ${data.hasDesignation}, ${data.designatedCastIds}, ${data.isAccompanied}, ${data.accompaniedCastIds}, ${data.customerType}, ${data.customerId}, ${data.guestName}, ${data.phone}, ${data.priceType}, ${data.partyPlanPrice}, ${data.partyPlanMinutes}, ${data.memo}, ${data.isVisited}, ${updatedAt}, ${data.updatedBy})
+    INSERT INTO reservations (id, date, time, party_size, has_designation, designated_cast_ids, is_accompanied, accompanied_cast_ids, customer_type, customer_ids, guest_name, phone, price_type, party_plan_price, party_plan_minutes, memo, is_visited, updated_at, updated_by)
+    VALUES (${id}, ${data.date}, ${data.time}, ${data.partySize}, ${data.hasDesignation}, ${data.designatedCastIds}, ${data.isAccompanied}, ${data.accompaniedCastIds}, ${data.customerType}, ${data.customerIds}, ${data.guestName}, ${data.phone}, ${data.priceType}, ${data.partyPlanPrice}, ${data.partyPlanMinutes}, ${data.memo}, ${data.isVisited}, ${updatedAt}, ${data.updatedBy})
     RETURNING *
   `
   return toReservation(rows[0])
@@ -501,7 +503,7 @@ export async function updateReservation(id: string, data: Partial<Omit<Reservati
       date = ${m.date}, time = ${m.time}, party_size = ${m.partySize},
       has_designation = ${m.hasDesignation}, designated_cast_ids = ${m.designatedCastIds},
       is_accompanied = ${m.isAccompanied}, accompanied_cast_ids = ${m.accompaniedCastIds},
-      customer_type = ${m.customerType}, customer_id = ${m.customerId},
+      customer_type = ${m.customerType}, customer_ids = ${m.customerIds},
       guest_name = ${m.guestName}, phone = ${m.phone}, is_visited = ${m.isVisited}, price_type = ${m.priceType}, party_plan_price = ${m.partyPlanPrice},
       party_plan_minutes = ${m.partyPlanMinutes}, memo = ${m.memo},
       updated_at = ${m.updatedAt}, updated_by = ${m.updatedBy}
@@ -513,11 +515,11 @@ export async function updateReservation(id: string, data: Partial<Omit<Reservati
 export async function getReservationsByCustomer(customerId: string): Promise<Reservation[]> {
   if (!useDB) {
     return Array.from(store.reservations.values())
-      .filter((r) => r.customerId === customerId)
+      .filter((r) => r.customerIds.includes(customerId))
       .sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`))
   }
   const sql = getSQL()
-  const rows = await sql`SELECT * FROM reservations WHERE customer_id = ${customerId} ORDER BY date, time`
+  const rows = await sql`SELECT * FROM reservations WHERE ${customerId} = ANY(customer_ids) OR customer_id = ${customerId} ORDER BY date, time`
   return rows.map(toReservation)
 }
 

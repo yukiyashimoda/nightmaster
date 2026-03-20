@@ -965,7 +965,7 @@ function _r(
     isAccompanied: isAccomp,
     accompaniedCastIds: isAccomp ? [_castIds[(i + 5) % _castIds.length]] : [],
     customerType: isNew ? 'new' : 'existing',
-    customerId: isNew ? null : `customer-${(i % 30) + 1}`,
+    customerIds: isNew ? [] : [`customer-${(i % 30) + 1}`],
     guestName: isNew ? _guests[i % _guests.length] : '',
     phone: '',
     isVisited: false,

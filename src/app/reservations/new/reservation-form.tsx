@@ -114,7 +114,7 @@ export function ReservationForm({ customers, casts, bottlesByCustomer }: Reserva
   const [accompaniedCastIds, setAccompaniedCastIds] = useState<string[]>([])
   const [customerType, setCustomerType] = useState<'existing' | 'new'>('new')
   const [guestName, setGuestName] = useState('')
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null)
+  const [selectedCustomerIds, setSelectedCustomerIds] = useState<string[]>([])
   const [customerQuery, setCustomerQuery] = useState('')
   const [priceType, setPriceType] = useState<'normal' | 'party'>('normal')
   const [partyPlanPrice, setPartyPlanPrice] = useState<string>('')
@@ -131,7 +131,13 @@ export function ReservationForm({ customers, casts, bottlesByCustomer }: Reserva
       )
     : customers
 
-  const selectedCustomer = customers.find((c) => c.id === selectedCustomerId)
+  const selectedCustomers = customers.filter((c) => selectedCustomerIds.includes(c.id))
+
+  function toggleCustomer(id: string) {
+    setSelectedCustomerIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    )
+  }
 
   const Toggle = ({
     value, onChange, label, activeLabel, activeColor = 'bg-brand-plum',
@@ -173,7 +179,7 @@ export function ReservationForm({ customers, casts, bottlesByCustomer }: Reserva
       isAccompanied,
       accompaniedCastIds: isAccompanied ? accompaniedCastIds : [],
       customerType,
-      customerId: customerType === 'existing' ? selectedCustomerId : null,
+      customerIds: customerType === 'existing' ? selectedCustomerIds : [],
       guestName: customerType === 'new' ? guestName : '',
       phone,
       isVisited: false,
@@ -356,24 +362,25 @@ export function ReservationForm({ customers, casts, bottlesByCustomer }: Reserva
           </div>
         )}
 
-        {/* 既存顧客選択 */}
+        {/* 既存顧客選択（複数可） */}
         {customerType === 'existing' && (
           <div className="rounded-lg border border-brand-beige bg-white overflow-hidden mt-2">
-            {selectedCustomer ? (
-              <div className="flex items-center justify-between px-3 py-2 border-b border-brand-beige bg-brand-plum/5">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm text-brand-plum font-medium">{selectedCustomer.name}</span>
-                  {(bottlesByCustomer.get(selectedCustomer.id) ?? 0) > 0 && (
-                    <span className="text-[11px] bg-brand-gold/15 text-brand-gold px-2 py-0.5 rounded-full font-medium">
-                      🍾 {bottlesByCustomer.get(selectedCustomer.id)}本
-                    </span>
-                  )}
-                </div>
-                <button type="button" onClick={() => setSelectedCustomerId(null)} className="text-brand-plum/50 hover:text-brand-coral shrink-0">
-                  <X className="h-4 w-4" />
-                </button>
+            {/* 選択済みチップ */}
+            {selectedCustomers.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 px-3 py-2 border-b border-brand-beige bg-brand-plum/5">
+                {selectedCustomers.map((c) => (
+                  <span key={c.id} className="flex items-center gap-1 text-xs bg-brand-plum/10 text-brand-plum px-2 py-0.5 rounded-full font-medium">
+                    {c.name}
+                    {(bottlesByCustomer.get(c.id) ?? 0) > 0 && (
+                      <span className="text-brand-gold">🍾{bottlesByCustomer.get(c.id)}</span>
+                    )}
+                    <button type="button" onClick={() => toggleCustomer(c.id)} className="hover:text-brand-coral">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
               </div>
-            ) : null}
+            )}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-plum/50" />
               <input
@@ -387,13 +394,17 @@ export function ReservationForm({ customers, casts, bottlesByCustomer }: Reserva
             <div className="max-h-40 overflow-y-auto border-t border-brand-beige">
               {filteredCustomers.map((c) => {
                 const bottleCount = bottlesByCustomer.get(c.id) ?? 0
+                const isSelected = selectedCustomerIds.includes(c.id)
                 return (
                   <button
                     key={c.id}
                     type="button"
-                    onClick={() => { setSelectedCustomerId(c.id); setCustomerQuery('') }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-brand-beige/50 transition-colors ${selectedCustomerId === c.id ? 'bg-brand-beige/50' : ''}`}
+                    onClick={() => toggleCustomer(c.id)}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-brand-beige/50 transition-colors ${isSelected ? 'bg-brand-plum/5' : ''}`}
                   >
+                    <span className={`w-4 h-4 flex items-center justify-center rounded border shrink-0 ${isSelected ? 'bg-brand-plum border-brand-plum' : 'border-brand-beige'}`}>
+                      {isSelected && <Check className="h-3 w-3 text-white" />}
+                    </span>
                     <span className="text-sm text-brand-plum">{c.name}</span>
                     <span className="text-xs text-brand-plum/50">({c.ruby})</span>
                     {bottleCount > 0 && (

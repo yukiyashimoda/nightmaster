@@ -46,7 +46,7 @@ export interface Reservation {
   isAccompanied: boolean   // 同伴か通常か
   accompaniedCastIds: string[]     // 同伴キャスト（複数可）
   customerType: 'existing' | 'new'  // 顧客か初来店か
-  customerId: string | null         // 既存顧客の場合
+  customerIds: string[]             // 既存顧客（複数可）
   guestName: string                 // 初来店の場合の予約名
   priceType: 'normal' | 'party'     // 通常料金かパーティープランか
   partyPlanPrice: number | null     // パーティープラン金額
