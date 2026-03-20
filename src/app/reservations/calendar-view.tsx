@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, Plus, Clock } from 'lucide-react'
 import type { Customer, Reservation } from '@/types'
@@ -81,6 +81,10 @@ function ReservationCard({
   )
 }
 
+// ─── 無限スクロール定数 ───────────────────────────────────────
+const BUFFER_WEEKS = 26           // 前後26週 = 約1年
+const TOTAL_WEEKS = BUFFER_WEEKS * 2 + 1  // 53週
+
 export function CalendarView({ reservations, customerMap }: CalendarViewProps) {
   const today = useMemo(() => {
     const d = new Date()
@@ -121,32 +125,99 @@ export function CalendarView({ reservations, customerMap }: CalendarViewProps) {
     return cells
   }, [currentDate, viewMode])
 
-  // Week days
-  const weekDays = useMemo(() => {
-    if (viewMode !== 'week') return []
-    return Array.from({ length: 7 }, (_, i) => addDays(currentDate, i))
-  }, [currentDate, viewMode])
+  // ─── 無限スクロール用データ ──────────────────────────────────
+  // today の週の月曜を基準にした全週リスト（マウント時に1度だけ生成）
+  const todayWeekStart = useRef(getWeekStart(today)).current
+  const allWeekStarts = useRef(
+    Array.from({ length: TOTAL_WEEKS }, (_, i) =>
+      addDays(todayWeekStart, (i - BUFFER_WEEKS) * 7)
+    )
+  ).current
+
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const skipScrollRef = useRef(false)   // プログラム的スクロール中はtrue
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const isInitializedRef = useRef(false) // 週ビュー初回スクロール済みフラグ
+
+  // currentDate に対応する allWeekStarts のインデックス
+  const activeWeekIndex = useMemo(() => {
+    const ws = getWeekStart(currentDate)
+    const diff = Math.round((ws.getTime() - todayWeekStart.getTime()) / (7 * 86400000))
+    return BUFFER_WEEKS + diff
+  }, [currentDate, todayWeekStart])
+
+  // 指定インデックスにスクロール
+  function scrollToIndex(idx: number, animate: boolean) {
+    const el = scrollRef.current
+    if (!el) return
+    skipScrollRef.current = true
+    el.scrollTo({ left: idx * el.clientWidth, behavior: animate ? 'smooth' : 'instant' })
+    clearTimeout(scrollTimerRef.current)
+    scrollTimerRef.current = setTimeout(() => {
+      skipScrollRef.current = false
+    }, animate ? 700 : 100)
+  }
+
+  // 週ビューに入ったとき・currentDate が変わったときにスクロール位置を同期
+  useEffect(() => {
+    if (viewMode !== 'week') {
+      isInitializedRef.current = false
+      return
+    }
+    const sync = () => {
+      const el = scrollRef.current
+      if (!el) return
+      const target = activeWeekIndex * el.clientWidth
+      const alreadyThere = Math.abs(el.scrollLeft - target) < el.clientWidth * 0.1
+      if (alreadyThere && isInitializedRef.current) return
+      scrollToIndex(activeWeekIndex, isInitializedRef.current)
+      isInitializedRef.current = true
+    }
+    if (!isInitializedRef.current) {
+      requestAnimationFrame(sync) // 初回はペイント後に実行
+    } else {
+      sync()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode, activeWeekIndex])
+
+  // スクロールイベント → currentDate を更新（ヘッダー連動）
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const onScroll = () => {
+      if (skipScrollRef.current) return
+      clearTimeout(scrollTimerRef.current)
+      scrollTimerRef.current = setTimeout(() => {
+        if (!scrollRef.current || skipScrollRef.current) return
+        const idx = Math.round(scrollRef.current.scrollLeft / scrollRef.current.clientWidth)
+        const weekStart = allWeekStarts[idx]
+        if (weekStart) setCurrentDate(weekStart)
+      }, 150)
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [allWeekStarts])
 
   // Navigation
   function prev() {
     if (viewMode === 'month') {
       setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
     } else {
-      setCurrentDate(addDays(currentDate, -7))
+      setCurrentDate(addDays(getWeekStart(currentDate), -7))
     }
   }
   function next() {
     if (viewMode === 'month') {
       setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
     } else {
-      setCurrentDate(addDays(currentDate, 7))
+      setCurrentDate(addDays(getWeekStart(currentDate), 7))
     }
   }
 
   function switchView(mode: 'month' | 'week') {
     if (mode === viewMode) return
     if (mode === 'week') {
-      // Show the week containing selectedDate
       const anchor = selectedDate ? new Date(selectedDate) : today
       setCurrentDate(getWeekStart(anchor))
     } else {
@@ -155,19 +226,18 @@ export function CalendarView({ reservations, customerMap }: CalendarViewProps) {
     setViewMode(mode)
   }
 
-  // Header label
+  // Header label（週ビューは currentDate から直接計算）
   const headerLabel = useMemo(() => {
     if (viewMode === 'month') {
       return `${currentDate.getFullYear()}年${currentDate.getMonth() + 1}月`
     }
-    const start = weekDays[0]
-    const end = weekDays[6]
-    if (!start || !end) return ''
+    const start = getWeekStart(currentDate)
+    const end = addDays(start, 6)
     if (start.getMonth() === end.getMonth()) {
       return `${start.getFullYear()}年${start.getMonth() + 1}月 ${start.getDate()}〜${end.getDate()}日`
     }
     return `${start.getMonth() + 1}/${start.getDate()} 〜 ${end.getMonth() + 1}/${end.getDate()}`
-  }, [viewMode, currentDate, weekDays])
+  }, [viewMode, currentDate])
 
   const selectedReservations = reservationsByDate.get(selectedDate) ?? []
 
@@ -320,58 +390,71 @@ export function CalendarView({ reservations, customerMap }: CalendarViewProps) {
         </>
       )}
 
-      {/* ── Week view ── */}
+      {/* ── Week view（無限スクロール） ── */}
       {viewMode === 'week' && (
         <>
-          {/* Horizontal day strip */}
-          <div className="bg-white rounded-xl border border-brand-beige mb-4 overflow-x-auto">
-            <div className="flex min-w-max sm:min-w-0 sm:grid sm:grid-cols-7">
-              {weekDays.map((day) => {
-                const dateStr = formatDate(day)
-                const count = reservationsByDate.get(dateStr)?.length ?? 0
-                const isToday = dateStr === todayStr
-                const isSelected = dateStr === selectedDate
-                const dow = day.getDay()
-                return (
-                  <button
-                    key={dateStr}
-                    onClick={() => setSelectedDate(dateStr)}
-                    className={`flex flex-col items-center justify-center gap-0.5 py-2 px-4 sm:px-1 min-w-[52px] sm:min-w-0 transition-colors ${
-                      isSelected ? 'bg-brand-plum/10' : 'hover:bg-brand-beige/30'
-                    }`}
-                  >
-                    <span
-                      className={`text-[11px] font-semibold ${
-                        dow === 0 ? 'text-red-400' : dow === 6 ? 'text-blue-400' : 'text-brand-plum/50'
-                      }`}
-                    >
-                      {DAY_LABELS[dow]}
-                    </span>
-                    <span
-                      className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${
-                        isToday
-                          ? 'bg-brand-plum text-white'
-                          : isSelected
-                          ? 'bg-brand-plum/20 text-brand-plum'
-                          : dow === 0
-                          ? 'text-red-400'
-                          : dow === 6
-                          ? 'text-blue-400'
-                          : 'text-brand-plum'
-                      }`}
-                    >
-                      {day.getDate()}
-                    </span>
-                    {count > 0 ? (
-                      <span className="text-[10px] font-bold text-brand-coral bg-brand-coral/10 rounded-full px-1.5 leading-4">
-                        {count}
-                      </span>
-                    ) : (
-                      <span className="h-4" />
-                    )}
-                  </button>
-                )
-              })}
+          {/* 横スクロール・スナップコンテナ */}
+          <div
+            ref={scrollRef}
+            className="bg-white rounded-xl border border-brand-beige mb-4 overflow-x-auto snap-x snap-mandatory"
+            style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
+          >
+            {/* 内側: TOTAL_WEEKS 分の幅を持つ flex コンテナ */}
+            <div className="flex" style={{ width: `${TOTAL_WEEKS * 100}%` }}>
+              {allWeekStarts.map((weekStart) => (
+                <div
+                  key={formatDate(weekStart)}
+                  className="grid grid-cols-7 snap-start flex-none"
+                  style={{ width: `${100 / TOTAL_WEEKS}%` }}
+                >
+                  {Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)).map((day) => {
+                    const dateStr = formatDate(day)
+                    const count = reservationsByDate.get(dateStr)?.length ?? 0
+                    const isToday = dateStr === todayStr
+                    const isSelected = dateStr === selectedDate
+                    const dow = day.getDay()
+                    return (
+                      <button
+                        key={dateStr}
+                        onClick={() => setSelectedDate(dateStr)}
+                        className={`flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
+                          isSelected ? 'bg-brand-plum/10' : 'hover:bg-brand-beige/30'
+                        }`}
+                      >
+                        <span
+                          className={`text-[11px] font-semibold ${
+                            dow === 0 ? 'text-red-400' : dow === 6 ? 'text-blue-400' : 'text-brand-plum/50'
+                          }`}
+                        >
+                          {DAY_LABELS[dow]}
+                        </span>
+                        <span
+                          className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${
+                            isToday
+                              ? 'bg-brand-plum text-white'
+                              : isSelected
+                              ? 'bg-brand-plum/20 text-brand-plum'
+                              : dow === 0
+                              ? 'text-red-400'
+                              : dow === 6
+                              ? 'text-blue-400'
+                              : 'text-brand-plum'
+                          }`}
+                        >
+                          {day.getDate()}
+                        </span>
+                        {count > 0 ? (
+                          <span className="text-[10px] font-bold text-brand-coral bg-brand-coral/10 rounded-full px-1.5 leading-4">
+                            {count}
+                          </span>
+                        ) : (
+                          <span className="h-4" />
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              ))}
             </div>
           </div>
 
